@@ -1,0 +1,114 @@
+// Colors
+$primary: rgb(26, 115, 232);
+$secondary: #676778;
+$success: #28a745;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #ff3e00;
+$light: #f8f9fa;
+$dark: #343a40;
+$back: #ffffff;
+$text: #444;
+$text-light: #888;
+$heading: #222;
+$scrollbar-thumb-color: #d2d2d7;
+$mat-tab-indicator-color: #ff3e00;
+$back-light: #f6fafd;
+
+// Screen Sizes
+$screen-tablet1: 768px;
+$screen-tablet2: 800px;
+$screen-tablet3: 1240px;
+
+// Project List Widths
+$project-list-width1: 650px;
+$project-list-width2: 950px;
+
+// Font Sizes
+$font-size-sm: 0.875rem; // 14px
+$font-size-md: 1rem; // 16px
+$font-size-lg: 1.5rem; // 24px
+$font-size-xl: 1.8rem; // 28px
+$font-size-h3: 2.2rem; // 36px
+$font-size-h2: 2.6rem; // 42px
+$font-size-h1: 3.6rem; // 56px
+
+// Font Weights
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-bold: 700;
+
+// Font Families
+$font-family-sans-serif: "Overpass",
+  -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  Roboto,
+  Oxygen,
+  Ubuntu,
+  Cantarell,
+  "Fira Sans",
+  "Droid Sans",
+  "Helvetica Neue",
+  sans-serif;
+$font-family-serif: Georgia, serif;
+$font-family-monospace: "Fira Mono", monospace;
+
+// Spacing
+$spacing-1: 0.25rem; // 4px
+$spacing-2: 0.5rem; // 8px
+$spacing-3: 1rem; // 16px
+$spacing-4: 1.5rem; // 24px
+$spacing-5: 3rem; // 48px
+
+// Line Heights
+$line-height-sm: 1;
+$line-height-md: 1.5;
+$line-height-lg: 2;
+
+// Borders
+$border-width: 1px;
+$border-color: #ccc;
+$border-bottom-color: #e0e0e0;
+$border-radius1: 0.3rem;
+$border-radius2: 1rem;
+// Shadows
+$box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+
+// Heights
+$nav-height: 6rem;
+$total-height: 100%;
+$top-height: 70vh;
+$line-height1: 1.5;
+
+// Nav
+$nav-height: 60px;
+$side-nav: 4.8rem;
+
+// Sidebar
+$sidebar-w: 30rem;
+$sidebar-mid-w: 36rem;
+$sidebar-large-w: 48rem;
+$sidebar-text: rgba(255, 255, 255, 0.9);
+$scrollbar-w: 8px;
+$scrollbar-border-radius: 4px;
+
+// Viewport
+$viewport-w: 100vw;
+$viewport-h: 100vh;
+
+$viewport-editor-h: 44vh;
+$viewport-editor-max-h: 76vh;
+
+$viewport-preview-min-h: 1vh;
+$viewport-preview-h: 38vh;
+
+$viewport-console-min-h: 20vh;
+$viewport-console-h: 20vh;
+
+// Logo
+$logo-w: 25rem;
+
+// Images
+$feature-bar-img1: '/assets/firebase-img1.png';
+$feature-bar-img2: '/assets/firebase-img2.png';
