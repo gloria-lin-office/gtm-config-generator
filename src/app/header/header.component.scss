@@ -1,0 +1,13 @@
+@import '../app.component.scss';
+
+.header {
+  position: relative;
+  background-color: $primary;
+  height: 308px;
+  margin-bottom: -232px;
+  background-image: url($feature-bar-img1), url($feature-bar-img2);
+  background-size: 380px auto, 350px auto;
+  background-position: left -70px bottom -75px, right -50px bottom -50px;
+  background-repeat: no-repeat, no-repeat;
+  z-index: 1;
+}
