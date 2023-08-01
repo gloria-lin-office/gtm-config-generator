@@ -1,0 +1,9 @@
+@import '@angular/material/theming';
+
+.functional-card {
+  @include mat-elevation(4);
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: inherit;
+}

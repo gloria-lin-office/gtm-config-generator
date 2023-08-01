@@ -1,0 +1,21 @@
+@import '../../../app.component.scss';
+
+.main-page {
+  &__title {
+    text-align: center;
+    margin: 20px 0;
+  }
+  &__editors {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+
+    &__item {
+      flex-grow: 1;
+    }
+  }
+}
