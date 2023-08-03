@@ -8,7 +8,10 @@ import {
 import { getTags } from './tag-utilities';
 import { getTriggers } from './trigger-utilities';
 import { outputTime } from './utilities';
-import { getBuiltInVariables, getVariables } from './variable-utilities';
+import {
+  getBuiltInVariables,
+  getVariables,
+} from './variable-utilities/variable-utilities';
 
 export function getGTMFinalConfiguration(
   accountId: string,

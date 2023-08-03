@@ -65,6 +65,7 @@ export interface VariableConfig {
   containerId: string;
   parameter?: Parameter[];
   formatValue?: {};
+  variableId?: string;
 }
 
 export interface GtmConfigGenerator {
