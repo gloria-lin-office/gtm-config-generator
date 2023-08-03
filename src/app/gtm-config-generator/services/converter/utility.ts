@@ -1,15 +1,19 @@
-import { Tag, Variable } from '../../../interfaces/gtm-cofig-generator';
+import {
+  NestedObject,
+  Parameter,
+  TagConfig,
+  TriggerConfig,
+  VariableConfig,
+} from '../../../interfaces/gtm-cofig-generator';
+import {
+  BUILT_IN_EVENTS,
+  BUILT_IN_SCROLL_EVENT,
+  BUILT_IN_VIDEO_EVENTS,
+} from './constant';
 
-export const BUILT_IN_SCROLL_EVENT = ['scroll'];
-export const BUILT_IN_VIDEO_EVENTS = [
-  'video_start',
-  'video_progress',
-  'video_complete',
-];
-export const BUILT_IN_EVENTS = [
-  ...BUILT_IN_SCROLL_EVENT,
-  ...BUILT_IN_VIDEO_EVENTS,
-];
+export function isBuiltInEvent(eventName: string): boolean {
+  return BUILT_IN_EVENTS.some((_event) => eventName.includes(_event));
+}
 
 export function isIncludeVideo(data: Record<string, string>[]) {
   return data.some((record) =>
@@ -23,193 +27,17 @@ export function isIncludeScroll(data: Record<string, string>[]) {
   );
 }
 
-export function createVariable(
-  accountId: string,
-  containerId: string,
-  dataLayerName: string
-): Variable {
-  return {
-    name: `DLV - ${dataLayerName}`,
-    type: 'v',
-    accountId,
-    containerId,
-    parameter: [
-      {
-        type: 'INTEGER',
-        key: 'dataLayerVersion',
-        value: '2',
-      },
-      {
-        type: 'BOOLEAN',
-        key: 'setDefaultValue',
-        value: 'false',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'name',
-        value: dataLayerName,
-      },
-    ],
-  };
-}
-
-export function createTrigger(
-  accountId: string,
-  containerId: string,
-  trigger: string
-) {
-  return {
-    accountId,
-    containerId,
-    type: 'CUSTOM_EVENT',
-    name: `event equals ${trigger}`,
-    customEventFilter: [
-      {
-        type: 'EQUALS',
-        parameter: [
-          {
-            type: 'TEMPLATE',
-            key: 'arg0',
-            value: '{{_event}}',
-          },
-          {
-            type: 'TEMPLATE',
-            key: 'arg1',
-            value: trigger,
-          },
-        ],
-      },
-    ],
-  };
-}
-
-// TODO: use the regex table instead of custom JS variable
-export function createGA4Configuration(accountId: string, containerId: string) {
-  return {
-    name: 'GA4 Configuration',
-    type: 'gaawc',
-    accountId,
-    containerId,
-    parameter: [
-      {
-        type: 'BOOLEAN',
-        key: 'sendPageView',
-        value: 'false',
-      },
-      {
-        type: 'BOOLEAN',
-        key: 'enableSendToServerContainer',
-        value: 'false',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'measurementId',
-        value: '{{CustomJS - Measurement ID}}',
-      },
-    ],
-    firingTriggerId: ['2147479553'],
-  };
-}
-
-export function createTag(
-  accountId: string,
-  containerId: string,
-  tag: Tag,
-  dataLayers: string[],
-  triggers: any[]
-) {
-  return {
-    name: `GA4 event - ${tag.name}`,
-    type: 'gaawe',
-    accountId,
-    containerId,
-    parameter: [
-      {
-        type: 'BOOLEAN',
-        key: 'sendEcommerceData',
-        value: 'false',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'eventName',
-        value: tag.name,
-      },
-      {
-        type: 'LIST',
-        key: 'eventParameters',
-        list: tag.parameters.map((param) => {
-          const dLReference = param.value;
-          return {
-            type: 'MAP',
-            map: [
-              {
-                type: 'TEMPLATE',
-                key: 'name',
-                value: param.key,
-              },
-              {
-                type: 'TEMPLATE',
-                key: 'value',
-                value:
-                  param.value && hasExistedDataLayer(dLReference, dataLayers)
-                    ? `{{${dLReference}}}`
-                    : ``,
-              },
-            ],
-          };
-        }),
-      },
-      {
-        type: 'TAG_REFERENCE',
-        key: 'measurementId',
-        value: 'GA4 Configuration',
-      },
-    ],
-    firingTriggerId: tag.triggers.map(
-      (t0: { name: any }) =>
-        triggers.find(
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          (t1) => t1.customEventFilter[0].parameter[1].value === t0.name
-        )!.triggerId
-    ),
-  };
-}
-
 export function hasExistedDataLayer(dLReference: string, dataLayers: string[]) {
   return dataLayers.some((dL) => dL.includes(dLReference));
 }
 
-export function createMeasurementIdCJS(
-  accountId: string,
-  containerId: string,
-  measurementIdCustomJS: string
-) {
-  return {
-    name: 'Custom JS - Measurement ID',
-    type: 'jsm',
-    accountId,
-    containerId,
-    parameter: [
-      {
-        type: 'TEMPLATE',
-        key: 'javascript',
-        value: measurementIdCustomJS,
-      },
-    ],
-    formatValue: {},
-  };
-}
-
-// TODO: type the data
-// the variables, triggers, and tags here are with the configuration
 export function getGTMFinalConfiguration(
   accountId: string,
   containerId: string,
-  variables: Variable[],
-  triggers: any[],
-  tags: any,
-  builtInVariable: any,
+  variables: VariableConfig[],
+  triggers: TriggerConfig[],
+  tags: TagConfig[],
+  builtInVariable: VariableConfig[],
   containerName: string,
   gtmId: string
 ) {
@@ -280,4 +108,72 @@ export function outputTime() {
   seconds = seconds < 10 ? '0' + seconds : seconds; // ensure seconds is 2-digits
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * A function to get all paths from the root to each leaf node in a nested object.
+ *
+ * @param obj - The nested object to get the paths from.
+ * @param prefix - The current path prefix, used during recursion.
+ * @returns An array of paths. Each path is a string with properties separated by dots.
+ *
+ * @example
+ * // returns ['a', 'b', 'b.c', 'b.d', 'b.d.e']
+ * getAllObjectPaths({ a: 1, b: { c: 2, d: { e: 3 } } })
+ */
+export function getAllObjectPaths(obj: NestedObject, prefix = ''): string[] {
+  let paths: string[] = [];
+
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      paths.push(path);
+
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        const nestedPaths = getAllObjectPaths(obj[key], path);
+        paths = paths.concat(nestedPaths);
+      }
+    }
+  }
+  return paths;
+}
+
+/**
+ * Formats an object into an array of key-value pairs, where each key is treated as a name and each value as a value.
+ * The first character of each value is omitted.
+ * @param params - An object where each key-value pair represents a parameter.
+ * @returns An array of objects, each containing 'name' and 'value' properties.
+ */
+export function formatParameters(params: Record<string, string>): Parameter[] {
+  return Object.keys(params).map((key) => {
+    const value = Array.isArray(params[key]) ? key : params[key].slice(1);
+    return { key: key, value: value, type: '' };
+  });
+}
+
+/**
+ * Formats the parameters of a single event.
+ * If the event parameters contain an 'ecommerce' key, the value of this key is also formatted and combined with the rest of the parameters.
+ * Otherwise, the function just formats the parameters.
+ * @param eventParams - A stringified JSON representing event parameters.
+ * @returns An array of objects, each containing 'name' and 'value' properties.
+ */
+export function formatSingleEventParameters(eventParams: string): Parameter[] {
+  const parsedEventParams = JSON.parse(eventParams);
+  const ecommerceString = 'ecommerce';
+
+  if (parsedEventParams.hasOwnProperty(ecommerceString)) {
+    const { ecommerce, ...rest } = parsedEventParams;
+    const ecommerceParams = formatParameters(ecommerce);
+    const restParams = formatParameters(rest);
+    const formattedParams = [...ecommerceParams, ...restParams];
+    console.log(
+      'formattedParams after formatting ecommerce: ',
+      formattedParams
+    );
+    return formattedParams;
+  }
+  const formattedParams = formatParameters(parsedEventParams);
+  console.log('formattedParams after formatting: ', formattedParams);
+  return formattedParams;
 }

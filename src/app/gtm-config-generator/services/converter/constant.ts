@@ -1,3 +1,20 @@
+import {
+  TagConfig,
+  TriggerConfig,
+  VariableConfig,
+} from 'src/app/interfaces/gtm-cofig-generator';
+
+export const BUILT_IN_SCROLL_EVENT = ['scroll'];
+export const BUILT_IN_VIDEO_EVENTS = [
+  'video_start',
+  'video_progress',
+  'video_complete',
+];
+export const BUILT_IN_EVENTS = [
+  ...BUILT_IN_SCROLL_EVENT,
+  ...BUILT_IN_VIDEO_EVENTS,
+];
+
 export const videoTrigger = ({
   accountId,
   containerId,
@@ -6,7 +23,7 @@ export const videoTrigger = ({
   accountId: string;
   containerId: string;
   progressThresholdsPercent?: string;
-}) => ({
+}): TriggerConfig => ({
   accountId,
   containerId,
   name: 'event youtube video',
@@ -62,7 +79,7 @@ export const videoBuiltInVariable = ({
 }: {
   accountId: string;
   containerId: string;
-}) => [
+}): VariableConfig[] => [
   {
     accountId,
     containerId,
@@ -121,7 +138,7 @@ export const videoTag = ({
   accountId: string;
   containerId: string;
   triggerId: string;
-}) => [
+}): TagConfig[] => [
   {
     accountId,
     containerId,
@@ -288,7 +305,7 @@ export const scrollTag = ({
   accountId: string;
   containerId: string;
   triggerId: string;
-}) => [
+}): TagConfig[] => [
   {
     accountId,
     containerId,
@@ -345,7 +362,7 @@ export const scrollTriggers = ({
   accountId: string;
   containerId: string;
   verticalThresholdsPercent?: string;
-}) => ({
+}): TriggerConfig => ({
   accountId,
   containerId,
   name: 'event scroll',
@@ -386,7 +403,7 @@ export const scrollBuiltInVariable = ({
 }: {
   accountId: string;
   containerId: string;
-}) => [
+}): VariableConfig[] => [
   {
     accountId,
     containerId,
