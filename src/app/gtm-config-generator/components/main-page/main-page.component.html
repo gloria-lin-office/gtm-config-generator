@@ -2,17 +2,17 @@
   <div class="main-page__title">
     <h1>Google Tag Manager Config Generator</h1>
   </div>
-  <div class="main-page__editors">
-    <div class="main-page__editors__item">
+  <div class="main-page__board">
+    <div class="main-page__board__item main-page__editor">
       <app-editor
         content="Paste your JSON here..."
         [editorExtension]="'inputJson'"
       />
     </div>
-    <div class="main-page__editors__item">
+    <div class="main-page__board__item">
       <app-functional-card />
     </div>
-    <div class="main-page__editors__item">
+    <div class="main-page__board__item main-page__editor">
       <app-editor
         content="your gtm configuration"
         [editorExtension]="'outputJson'"

@@ -18,47 +18,27 @@ import {
   isIncludeScroll,
   isIncludeVideo,
 } from './utility';
-
-const ACCOUNT_ID = '6072698131';
-const CONTAINER_ID = '102416705';
-const CONTAINER_NAME = 'validation';
-const GTM_ID = 'GTM-WJ6N3RM';
-const MEASUREMENT_ID_STAGING = 'G-1ZQZQZQZQZ';
-const MEASUREMENT_ID_PROD = 'G-2ZQZQZQZQZ';
-const STAGING_URL = 'https://example.com';
-const PROD_URL = 'https://example.com';
-const measurementIdCustomJS = `function() {\n  var MEASUREMENT_ID_STAGING = '${MEASUREMENT_ID_STAGING}'\n  var MEASUREMENT_ID_PROD = '${MEASUREMENT_ID_PROD}'\n\n  var originUrl = window.origin\n\n  if(originUrl === '${STAGING_URL}') return MEASUREMENT_ID_STAGING\n  if(originUrl === '${PROD_URL}') return MEASUREMENT_ID_PROD\n\n  throw new Error('Invalid environment provided')\n}\n`;
-
-interface NestedObject {
-  [key: string]: any;
-}
+import {
+  GtmConfigGenerator,
+  NestedObject,
+  Tag,
+  Trigger,
+  Error,
+  Parameter,
+} from '../../../interfaces/gtm-cofig-generator';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConverterService {
   dataLayers: string[] = [];
-  triggers: { name: string; id: number }[] = [];
-  tags: {
-    name: string;
-    triggers: { name: string; id: number }[];
-    parameters: { name: string; value: string }[];
-  }[] = [];
-  errors: { type: 'dL'; reason: string; meta: any }[] = [];
+  triggers: Trigger[] = [];
+  tags: Tag[] = [];
+  measurementIdCustomJS = '';
+  errors: Error[] = [];
 
-  accountId: string = ACCOUNT_ID;
-  containerId: string = CONTAINER_ID;
-  containerName: string = CONTAINER_NAME;
-  GTMId: string = GTM_ID;
-  stagingUrl = STAGING_URL;
-  productionUrl = PROD_URL;
-  stagingMeasurementId = MEASUREMENT_ID_STAGING;
-  productionMeasurementId = MEASUREMENT_ID_PROD;
-
-  constructor() {}
-
-  convert(jsonString: string) {
-    const specs = this.fiftyFiveParseAllSpecs(jsonString);
+  convert(gtmConfigGenerator: GtmConfigGenerator) {
+    const specs = this.fiftyFiveParseAllSpecs(gtmConfigGenerator.specs);
     const formattedData = specs.map((spec: { [x: string]: any }) => {
       const eventName = spec['event'];
 
@@ -75,18 +55,29 @@ export class ConverterService {
       return { formattedParameters, eventName };
     });
 
-    const results = this.exportGTMJSON(formattedData);
-    return results;
+    const measurementIdSettings = {
+      stagingMeasurementId: gtmConfigGenerator.stagingMeasurementId,
+      stagingUrl: gtmConfigGenerator.stagingUrl,
+      productionMeasurementId: gtmConfigGenerator.productionMeasurementId,
+      productionUrl: gtmConfigGenerator.productionUrl,
+    };
+
+    this.setMeasurementIdCustomJSVariable(measurementIdSettings);
+
+    return this.exportGTMJSON(
+      formattedData,
+      gtmConfigGenerator.accountId,
+      gtmConfigGenerator.containerId,
+      gtmConfigGenerator.containerName,
+      gtmConfigGenerator.gtmId
+    );
   }
 
   // ------------------------------------------------------------
   // tags-related methods
   // ------------------------------------------------------------
 
-  private formatSingleTag(
-    formattedParams: { name: string; value: string }[],
-    eventName: string
-  ) {
+  private formatSingleTag(formattedParams: Parameter[], eventName: string) {
     if (this.isBuiltInEvent(eventName)) {
       return;
     }
@@ -98,10 +89,8 @@ export class ConverterService {
     return BUILT_IN_EVENTS.some((_event) => eventName.includes(_event));
   }
 
-  private addTagIfNotExists(
-    eventName: string,
-    formattedParams: { name: string; value: string }[]
-  ) {
+  // TODO: missed type
+  private addTagIfNotExists(eventName: string, formattedParams: Parameter[]) {
     if (!this.tags.some((tag) => tag.name === eventName)) {
       this.tags.push({
         name: eventName,
@@ -258,14 +247,13 @@ export class ConverterService {
 
   private getVariables(accountId: string, containerId: string) {
     const variables = this.dataLayers.map((dL, i) => {
-      // const dataLayerName = `${dL}`;
       return createVariable(accountId, containerId, dL);
     });
 
     const measurementIdVariable = createMeasurementIdCJS(
       accountId,
       containerId,
-      measurementIdCustomJS
+      this.measurementIdCustomJS
     );
     variables.push(measurementIdVariable);
 
@@ -273,6 +261,23 @@ export class ConverterService {
       ...data,
       variableId: (index + 1).toString(),
     }));
+  }
+
+  private setMeasurementIdCustomJSVariable(data: { [x: string]: any }) {
+    const stagingMeasurementId = data['stagingMeasurementId'];
+    const stagingUrl = data['stagingUrl'];
+    const productionMeasurementId = data['productionMeasurementId'];
+    const productionUrl = data['productionUrl'];
+
+    const measurementIdCustomJS = `function() {\n  
+        var MEASUREMENT_ID_STAGING = '${stagingMeasurementId}'\n  
+        var MEASUREMENT_ID_PROD = '${productionMeasurementId}'\n\n  
+        var originUrl = window.origin\n\n  
+        if(originUrl === '${stagingUrl}') return MEASUREMENT_ID_STAGING\n  
+        if(originUrl === '${productionUrl}') return MEASUREMENT_ID_PROD\n\n  
+        throw new Error('Invalid environment provided')\n
+      }\n`;
+    this.measurementIdCustomJS = measurementIdCustomJS;
   }
 
   private getBuiltInVariables(
@@ -375,7 +380,7 @@ export class ConverterService {
   private formatParameters(params: Record<string, string>) {
     return Object.keys(params).map((key) => {
       const value = Array.isArray(params[key]) ? key : params[key].slice(1);
-      return { name: key, value };
+      return { key: key, value: value, type: '' };
     });
   }
 
@@ -408,11 +413,13 @@ export class ConverterService {
 
   // export
 
-  private exportGTMJSON(data: Record<string, string>[]) {
-    console.log('data in the exportGTMJSON', data);
-    const accountId = this.accountId;
-    const containerId = this.containerId;
-
+  private exportGTMJSON(
+    data: Record<string, string>[],
+    accountId: string,
+    containerId: string,
+    containerName: string,
+    gtmId: string
+  ) {
     const _variable = this.getVariables(accountId, containerId);
     const _triggers = this.getTriggers(accountId, containerId, data);
     const _tags = this.getTags(accountId, containerId, data, _triggers);
@@ -429,8 +436,8 @@ export class ConverterService {
       _triggers,
       _tags,
       builtInVariable,
-      this.containerName,
-      this.GTMId
+      containerName,
+      gtmId
     );
   }
 }

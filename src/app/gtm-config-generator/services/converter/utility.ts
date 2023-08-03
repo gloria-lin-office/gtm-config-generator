@@ -1,16 +1,4 @@
-export interface Parameter {
-  type: string;
-  key: string;
-  value: string;
-}
-
-export interface Variable {
-  name: string;
-  type: string;
-  accountId: string;
-  containerId: string;
-  parameter: Parameter[];
-}
+import { Tag, Variable } from '../../../interfaces/gtm-cofig-generator';
 
 export const BUILT_IN_SCROLL_EVENT = ['scroll'];
 export const BUILT_IN_VIDEO_EVENTS = [
@@ -126,7 +114,7 @@ export function createGA4Configuration(accountId: string, containerId: string) {
 export function createTag(
   accountId: string,
   containerId: string,
-  tag: any,
+  tag: Tag,
   dataLayers: string[],
   triggers: any[]
 ) {
@@ -149,7 +137,7 @@ export function createTag(
       {
         type: 'LIST',
         key: 'eventParameters',
-        list: tag.parameters.map((param: { value: string; name: any }) => {
+        list: tag.parameters.map((param) => {
           const dLReference = param.value;
           return {
             type: 'MAP',
@@ -157,7 +145,7 @@ export function createTag(
               {
                 type: 'TEMPLATE',
                 key: 'name',
-                value: param.name,
+                value: param.key,
               },
               {
                 type: 'TEMPLATE',
@@ -213,19 +201,21 @@ export function createMeasurementIdCJS(
   };
 }
 
+// TODO: type the data
+// the variables, triggers, and tags here are with the configuration
 export function getGTMFinalConfiguration(
   accountId: string,
   containerId: string,
   variables: Variable[],
-  triggers: any,
+  triggers: any[],
   tags: any,
   builtInVariable: any,
   containerName: string,
-  GTMId: string
+  gtmId: string
 ) {
   return {
     exportFormatVersion: 2,
-    exportTime: '2023-07-26 12:27:32',
+    exportTime: outputTime(),
     containerVersion: {
       path: `accounts/${accountId}/containers/${containerId}/versions/0`,
       accountId: `${accountId}`,
@@ -236,7 +226,7 @@ export function getGTMFinalConfiguration(
         accountId: `${accountId}`,
         containerId: `${containerId}`,
         name: containerName,
-        publicId: GTMId,
+        publicId: gtmId,
         usageContext: ['WEB'],
         fingerprint: '1690281340453',
         tagManagerUrl: `https://tagmanager.google.com/#/container/accounts/${accountId}/containers/${containerId}/workspaces?apiLink=container`,
@@ -256,7 +246,7 @@ export function getGTMFinalConfiguration(
           supportZones: true,
           supportTransformations: false,
         },
-        tagIds: [GTMId],
+        tagIds: [gtmId],
       },
       builtInVariable,
       variable: variables,
@@ -266,4 +256,28 @@ export function getGTMFinalConfiguration(
       tagManagerUrl: `https://tagmanager.google.com/#/versions/accounts/${accountId}/containers/${containerId}/versions/0?apiLink=version`,
     },
   };
+}
+
+export function outputTime() {
+  //output the time like the format: 2023-08-03 02:16:33
+  const date: Date = new Date();
+
+  let year: number = date.getFullYear();
+
+  let month: number | string = date.getMonth() + 1; // getMonth() is zero-indexed, so we need to add 1
+  month = month < 10 ? '0' + month : month; // ensure month is 2-digits
+
+  let day: number | string = date.getDate();
+  day = day < 10 ? '0' + day : day; // ensure day is 2-digits
+
+  let hours: number | string = date.getHours();
+  hours = hours < 10 ? '0' + hours : hours; // ensure hours is 2-digits
+
+  let minutes: number | string = date.getMinutes();
+  minutes = minutes < 10 ? '0' + minutes : minutes; // ensure minutes is 2-digits
+
+  let seconds: number | string = date.getSeconds();
+  seconds = seconds < 10 ? '0' + seconds : seconds; // ensure seconds is 2-digits
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }

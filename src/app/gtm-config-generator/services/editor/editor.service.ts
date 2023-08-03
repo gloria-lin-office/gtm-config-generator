@@ -4,6 +4,7 @@ import { placeholder } from '@codemirror/view';
 import { BehaviorSubject, map } from 'rxjs';
 import { jsonLightEditorExtensions } from './editor-extensions';
 import { jsonString } from '../converter/test-gtm-data';
+import { editorStyles } from './editor-style';
 
 export type EditorExtension = 'inputJson' | 'outputJson';
 type ExtensionArray = any[];
@@ -29,7 +30,7 @@ export class EditorService {
 
   editor$ = {
     inputJson: this.editorSubjects.inputJson.asObservable(),
-    outputJson: this.editorSubjects.inputJson.asObservable(),
+    outputJson: this.editorSubjects.outputJson.asObservable(),
   };
 
   constructor() {}
@@ -44,22 +45,7 @@ export class EditorService {
       editorView = new EditorView({
         extensions: [
           ...this.editorExtensions[extension],
-          EditorView.theme({
-            '.cm-content': {
-              display: 'block',
-              textAlign: 'justify',
-              background: 'white',
-              color: 'black',
-              padding: '1em',
-              borderRadius: '3px',
-              border: '1px solid #ddd',
-              width: '100%',
-              'min-height': '600px',
-              'max-height': '700px',
-              'min-width': '200px',
-            },
-            '.cm-gutters': { display: 'none' },
-          }),
+          EditorView.theme(editorStyles),
           EditorView.lineWrapping,
           placeholder(
             content ? content : this.contentSubjects[extension].getValue()

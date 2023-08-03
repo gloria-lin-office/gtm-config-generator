@@ -1,5 +1,4 @@
-export const jsonString = `
-[
+export const jsonString = `[
   {
     "event": "begin_checkout",
     "ecommerce":{

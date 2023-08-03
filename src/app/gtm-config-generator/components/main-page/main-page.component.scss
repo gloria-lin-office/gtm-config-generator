@@ -1,21 +1,27 @@
 @import '../../../app.component.scss';
 
 .main-page {
+  padding: 0 100px 30px;
+
   &__title {
     text-align: center;
     margin: 20px 0;
   }
-  &__editors {
+
+  &__board {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    gap: 20px;
-    padding: 0 20px;
+    align-items: stretch;
+    gap: 40px;
 
     &__item {
       flex-grow: 1;
     }
+  }
+
+  &__editor {
+    border: 1px solid $border-color;
   }
 }
