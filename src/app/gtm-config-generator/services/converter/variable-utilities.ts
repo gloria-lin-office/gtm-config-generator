@@ -1,6 +1,6 @@
 import { VariableConfig } from '../../../interfaces/gtm-cofig-generator';
 import { scrollBuiltInVariable, videoBuiltInVariable } from './constant';
-import { isIncludeScroll, isIncludeVideo } from './utility';
+import { isIncludeScroll, isIncludeVideo } from './utilities';
 
 export function createMeasurementIdCJS(
   accountId: string,
@@ -66,4 +66,27 @@ export function getBuiltInVariables(
       ? [...scrollBuiltInVariable({ accountId, containerId })]
       : []),
   ];
+}
+
+export function getVariables(
+  accountId: string,
+  containerId: string,
+  dataLayers: string[],
+  measurementIdCustomJS: string
+): VariableConfig[] {
+  const variables = dataLayers.map((dL, i) => {
+    return createVariable(accountId, containerId, dL);
+  });
+
+  const measurementIdVariable = createMeasurementIdCJS(
+    accountId,
+    containerId,
+    measurementIdCustomJS
+  );
+  variables.push(measurementIdVariable);
+
+  return variables.map((data, index) => ({
+    ...data,
+    variableId: (index + 1).toString(),
+  }));
 }

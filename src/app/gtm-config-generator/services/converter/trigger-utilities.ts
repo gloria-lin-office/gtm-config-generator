@@ -1,5 +1,8 @@
-import { TriggerConfig } from '../../../interfaces/gtm-cofig-generator';
-import { isIncludeScroll, isIncludeVideo } from './utility';
+import {
+  Trigger,
+  TriggerConfig,
+} from '../../../interfaces/gtm-cofig-generator';
+import { isIncludeScroll, isIncludeVideo } from './utilities';
 import { scrollTriggers, videoTrigger } from './constant';
 
 export function createTrigger(
@@ -70,4 +73,22 @@ export function createScrollTrigger(
     console.error('Failed to create scroll trigger:', error);
     return []; // if there's an error, return an empty array
   }
+}
+
+export function getTriggers(
+  accountId: string,
+  containerId: string,
+  data: Record<string, string>[],
+  triggers: Trigger[]
+): TriggerConfig[] {
+  return [
+    ...triggers.map(({ name: trigger }) => {
+      return createTrigger(accountId, containerId, trigger);
+    }),
+    ...createVideoTrigger(accountId, containerId, data),
+    ...createScrollTrigger(accountId, containerId, data),
+  ].map((_trigger, index) => ({
+    ..._trigger,
+    triggerId: (index + 1).toString(),
+  }));
 }

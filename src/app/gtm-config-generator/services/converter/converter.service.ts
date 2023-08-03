@@ -1,38 +1,16 @@
-import {
-  TagConfig,
-  TriggerConfig,
-  VariableConfig,
-} from './../../../interfaces/gtm-cofig-generator';
 import { Injectable } from '@angular/core';
-import {
-  formatSingleEventParameters,
-  getAllObjectPaths,
-  getGTMFinalConfiguration,
-  isBuiltInEvent,
-} from './utility';
+import { exportGtmJSON } from './configuration-utilities';
 import {
   GtmConfigGenerator,
   Tag,
   Trigger,
-  Error,
   Parameter,
 } from '../../../interfaces/gtm-cofig-generator';
 import {
-  createScrollTrigger,
-  createTrigger,
-  createVideoTrigger,
-} from './trigger-utilities';
-import {
-  createGA4Configuration,
-  createScrollTag,
-  createTag,
-  createVideoTag,
-} from './tag-utilities';
-import {
-  createMeasurementIdCJS,
-  createVariable,
-  getBuiltInVariables,
-} from './variable-utilities';
+  formatSingleEventParameters,
+  getAllObjectPaths,
+  isBuiltInEvent,
+} from './utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -42,42 +20,50 @@ export class ConverterService {
   triggers: Trigger[] = [];
   tags: Tag[] = [];
   measurementIdCustomJS = '';
-  errors: Error[] = [];
 
   convert(gtmConfigGenerator: GtmConfigGenerator) {
-    const specs = this.fiftyFiveParseAllSpecs(gtmConfigGenerator.specs);
-    const formattedData = specs.map((spec: { [x: string]: any }) => {
-      const eventName = spec['event'];
+    try {
+      const specs = this.parseAllSpecs(gtmConfigGenerator.specs);
+      const formattedData = specs.map((spec: { [x: string]: any }) => {
+        const eventName = spec['event'];
 
-      const eventParameters = { ...spec }; // copy of spec
-      delete eventParameters['event'];
+        const eventParameters = { ...spec }; // copy of spec
+        delete eventParameters['event'];
 
-      const formattedParameters = formatSingleEventParameters(
-        JSON.stringify(eventParameters)
+        const formattedParameters = formatSingleEventParameters(
+          JSON.stringify(eventParameters)
+        );
+
+        this.formatSingleTrigger(eventName);
+        this.formatSingleTag(formattedParameters, eventName);
+
+        return { formattedParameters, eventName };
+      });
+
+      const measurementIdSettings = {
+        stagingMeasurementId: gtmConfigGenerator.stagingMeasurementId,
+        stagingUrl: gtmConfigGenerator.stagingUrl,
+        productionMeasurementId: gtmConfigGenerator.productionMeasurementId,
+        productionUrl: gtmConfigGenerator.productionUrl,
+      };
+
+      this.setMeasurementIdCustomJSVariable(measurementIdSettings);
+
+      return exportGtmJSON(
+        formattedData,
+        gtmConfigGenerator.accountId,
+        gtmConfigGenerator.containerId,
+        gtmConfigGenerator.containerName,
+        gtmConfigGenerator.gtmId,
+        this.tags,
+        this.dataLayers,
+        this.triggers,
+        this.measurementIdCustomJS
       );
-
-      this.formatSingleTrigger(eventName);
-      this.formatSingleTag(formattedParameters, eventName);
-
-      return { formattedParameters, eventName };
-    });
-
-    const measurementIdSettings = {
-      stagingMeasurementId: gtmConfigGenerator.stagingMeasurementId,
-      stagingUrl: gtmConfigGenerator.stagingUrl,
-      productionMeasurementId: gtmConfigGenerator.productionMeasurementId,
-      productionUrl: gtmConfigGenerator.productionUrl,
-    };
-
-    this.setMeasurementIdCustomJSVariable(measurementIdSettings);
-
-    return this.exportGtmJSON(
-      formattedData,
-      gtmConfigGenerator.accountId,
-      gtmConfigGenerator.containerId,
-      gtmConfigGenerator.containerName,
-      gtmConfigGenerator.gtmId
-    );
+    } catch (error) {
+      console.error('error: ', error);
+      throw { error };
+    }
   }
 
   // ------------------------------------------------------------
@@ -89,11 +75,10 @@ export class ConverterService {
       return;
     }
     this.addTagIfNotExists(eventName, formattedParams);
-    console.log('this.tags', this.tags);
   }
 
   private addTagIfNotExists(eventName: string, formattedParams: Parameter[]) {
-    if (!this.tags.some((tag) => tag.name === eventName)) {
+    if (!this.tags.some((tag) => tag.name === eventName) && this.triggers) {
       this.tags.push({
         name: eventName,
         parameters: formattedParams,
@@ -102,34 +87,6 @@ export class ConverterService {
         ],
       });
     }
-  }
-
-  private getTags(
-    accountId: string,
-    containerId: string,
-    data: Record<string, string>[],
-    triggers: TriggerConfig[]
-  ): TagConfig[] {
-    return [
-      // config tag
-      createGA4Configuration(accountId, containerId),
-      // normal tags
-      ...this.tags.map((tag) => {
-        return createTag(
-          accountId,
-          containerId,
-          tag,
-          this.dataLayers,
-          triggers
-        );
-      }),
-      // built-in tags. Currently only video and scroll
-      ...createVideoTag(accountId, containerId, data, triggers),
-      ...createScrollTag(accountId, containerId, data, triggers),
-    ].map((_data, index) => ({
-      ..._data,
-      tagId: (index + 1).toString(),
-    }));
   }
 
   // ------------------------------------------------------------
@@ -142,7 +99,6 @@ export class ConverterService {
     }
 
     this.addTriggerIfNotExists(eventName);
-    console.log('this.triggers', this.triggers);
   }
 
   private addTriggerIfNotExists(eventName: string) {
@@ -154,47 +110,9 @@ export class ConverterService {
     }
   }
 
-  private getTriggers(
-    accountId: string,
-    containerId: string,
-    data: Record<string, string>[]
-  ): TriggerConfig[] {
-    return [
-      ...this.triggers.map(({ name: trigger }) => {
-        return createTrigger(accountId, containerId, trigger);
-      }),
-      ...createVideoTrigger(accountId, containerId, data),
-      ...createScrollTrigger(accountId, containerId, data),
-    ].map((_trigger, index) => ({
-      ..._trigger,
-      triggerId: (index + 1).toString(),
-    }));
-  }
-
   // ------------------------------------------------------------
   // variables-related methods
   // ------------------------------------------------------------
-
-  private getVariables(
-    accountId: string,
-    containerId: string
-  ): VariableConfig[] {
-    const variables = this.dataLayers.map((dL, i) => {
-      return createVariable(accountId, containerId, dL);
-    });
-
-    const measurementIdVariable = createMeasurementIdCJS(
-      accountId,
-      containerId,
-      this.measurementIdCustomJS
-    );
-    variables.push(measurementIdVariable);
-
-    return variables.map((data, index) => ({
-      ...data,
-      variableId: (index + 1).toString(),
-    }));
-  }
 
   private setMeasurementIdCustomJSVariable(data: { [x: string]: any }) {
     const stagingMeasurementId = data['stagingMeasurementId'];
@@ -219,7 +137,7 @@ export class ConverterService {
 
   // data parsing
 
-  private fiftyFiveParseAllSpecs(inputString: string) {
+  private parseAllSpecs(inputString: string) {
     const allSpecs = JSON.parse(inputString);
     // Using 'map' to apply the 'parseSpec' function to each object in the 'allSpecs' array
     // 'bind(this)' is used to ensure that 'this' inside 'parseSpec' refers to the class instance
@@ -238,8 +156,10 @@ export class ConverterService {
 
       return parsedJSON;
     } else {
-      this.addError(parsedJSON);
-      return null;
+      // If JSON parsing fails, throw an error.
+      throw new Error(
+        'Cannot parse JSON. Please revise the format to follow JSON structure rules'
+      );
     }
   }
 
@@ -248,42 +168,7 @@ export class ConverterService {
     this.dataLayers.push(...uniquePaths);
   }
 
-  private addError(parsedJSON: Record<string, string>) {
-    this.errors.push({
-      type: 'dL',
-      reason:
-        'cannot parse JSON. please revise the format to follow JSON format structures',
-      meta: parsedJSON,
-    });
-  }
-
   private filterDuplicates(paths: string[]): string[] {
     return paths.filter((path) => !this.dataLayers.includes(path));
-  }
-
-  // export
-
-  private exportGtmJSON(
-    data: Record<string, string>[],
-    accountId: string,
-    containerId: string,
-    containerName: string,
-    gtmId: string
-  ) {
-    const _variable = this.getVariables(accountId, containerId);
-    const _triggers = this.getTriggers(accountId, containerId, data);
-    const _tags = this.getTags(accountId, containerId, data, _triggers);
-    const builtInVariable = getBuiltInVariables(accountId, containerId, data);
-
-    return getGTMFinalConfiguration(
-      accountId,
-      containerId,
-      _variable,
-      _triggers,
-      _tags,
-      builtInVariable,
-      containerName,
-      gtmId
-    );
   }
 }

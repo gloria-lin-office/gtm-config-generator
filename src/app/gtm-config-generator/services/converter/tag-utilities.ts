@@ -8,7 +8,7 @@ import {
   hasExistedDataLayer,
   isIncludeScroll,
   isIncludeVideo,
-} from './utility';
+} from './utilities';
 
 export function createGA4Configuration(
   accountId: string,
@@ -166,4 +166,28 @@ export function createScrollTag(
     // throw error;
     return [];
   }
+}
+
+export function getTags(
+  accountId: string,
+  containerId: string,
+  data: Record<string, string>[],
+  triggers: TriggerConfig[],
+  tags: Tag[],
+  dataLayers: string[]
+): TagConfig[] {
+  return [
+    // config tag
+    createGA4Configuration(accountId, containerId),
+    // normal tags
+    ...tags.map((tag) => {
+      return createTag(accountId, containerId, tag, dataLayers, triggers);
+    }),
+    // built-in tags. Currently only video and scroll
+    ...createVideoTag(accountId, containerId, data, triggers),
+    ...createScrollTag(accountId, containerId, data, triggers),
+  ].map((_data, index) => ({
+    ..._data,
+    tagId: (index + 1).toString(),
+  }));
 }

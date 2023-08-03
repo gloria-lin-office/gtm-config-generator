@@ -2,12 +2,6 @@ export interface NestedObject {
   [key: string]: any;
 }
 
-export interface Error {
-  type: string;
-  reason: string;
-  meta: any;
-}
-
 interface ParameterMap {
   type: string;
   key: string;
