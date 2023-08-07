@@ -5,7 +5,7 @@
   <div class="main-page__board">
     <div class="main-page__board__item main-page__editor">
       <app-editor
-        content="Paste your JSON here..."
+        content="{{ exampleInputJson | json }}"
         [editorExtension]="'inputJson'"
       />
     </div>
@@ -19,4 +19,8 @@
       />
     </div>
   </div>
+  <div class="main-page__article">
+    <app-article />
+  </div>
 </div>
+<app-footer></app-footer>

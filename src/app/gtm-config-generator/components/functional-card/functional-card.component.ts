@@ -19,6 +19,7 @@ import { MeasurementIdTableComponent } from '../measurement-id-table/measurement
 import { OverlayModule } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
 import { GtmConfigGenerator } from 'src/app/interfaces/gtm-cofig-generator';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-functional-card',
@@ -35,6 +36,7 @@ import { GtmConfigGenerator } from 'src/app/interfaces/gtm-cofig-generator';
     MatTooltipModule,
     OverlayModule,
     MeasurementIdTableComponent,
+    MatCheckboxModule,
   ],
   templateUrl: './functional-card.component.html',
   styleUrls: ['./functional-card.component.scss'],
@@ -42,12 +44,9 @@ import { GtmConfigGenerator } from 'src/app/interfaces/gtm-cofig-generator';
 })
 export class FunctionalCardComponent {
   form = this.fb.group({
-    tagManagerUrl: [
-      'https://tagmanager.google.com/#/container/accounts/6072698131/containers/102416705/workspaces/12',
-      Validators.required,
-    ],
-    containerName: ['validation', Validators.required],
-    gtmId: ['WJ6N3RM', Validators.required],
+    tagManagerUrl: ['', Validators.required],
+    containerName: ['', Validators.required],
+    gtmId: ['', Validators.required],
   });
 
   // the dummy form for measurement id setting

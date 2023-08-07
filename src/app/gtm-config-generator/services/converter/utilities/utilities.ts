@@ -2,11 +2,7 @@ import {
   NestedObject,
   Parameter,
 } from '../../../../interfaces/gtm-cofig-generator';
-import {
-  BUILT_IN_EVENTS,
-  BUILT_IN_SCROLL_EVENT,
-  BUILT_IN_VIDEO_EVENTS,
-} from '../constant';
+import { BUILT_IN_EVENTS, BUILT_IN_VIDEO_EVENTS } from '../constant';
 
 export function isBuiltInEvent(eventName: string): boolean {
   try {
@@ -18,19 +14,22 @@ export function isBuiltInEvent(eventName: string): boolean {
 
 export function isIncludeVideo(data: Record<string, string>[]) {
   try {
-    return data.some((record) =>
-      BUILT_IN_VIDEO_EVENTS.includes(record['eventName'])
-    );
+    // return data.some((record) =>
+    //   BUILT_IN_VIDEO_EVENTS.includes(record['eventName'])
+    // );
+    return true;
   } catch (error) {
     throw new Error('Failed to check if video is included');
   }
 }
 
 export function isIncludeScroll(data: Record<string, string>[]) {
+  // always include scroll according to the current situation
   try {
-    return data.some((record) =>
-      BUILT_IN_SCROLL_EVENT.includes(record['eventName'])
-    );
+    // return data.some((record) =>
+    //   BUILT_IN_SCROLL_EVENT.includes(record['eventName'])
+    // );
+    return true;
   } catch (error) {
     throw new Error('Failed to check if scroll is included');
   }

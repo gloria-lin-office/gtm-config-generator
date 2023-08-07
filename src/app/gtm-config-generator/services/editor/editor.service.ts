@@ -3,7 +3,6 @@ import { EditorView } from 'codemirror';
 import { placeholder } from '@codemirror/view';
 import { BehaviorSubject, map } from 'rxjs';
 import { jsonLightEditorExtensions } from './editor-extensions';
-import { jsonString } from '../converter/test-gtm-data';
 import { editorStyles } from './editor-style';
 
 export type EditorExtension = 'inputJson' | 'outputJson';
@@ -64,7 +63,7 @@ export class EditorService {
       editorView.dispatch({
         changes: {
           from: 0,
-          insert: jsonString,
+          insert: '',
           to: editorView.state.doc.length,
         },
       });
