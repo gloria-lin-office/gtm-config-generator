@@ -1,9 +1,9 @@
 import {
   Trigger,
   TriggerConfig,
-} from '../../../interfaces/gtm-cofig-generator';
-import { isIncludeScroll, isIncludeVideo } from './utilities';
-import { scrollTriggers, videoTrigger } from './constant';
+} from '../../../../interfaces/gtm-cofig-generator';
+import { isIncludeScroll, isIncludeVideo } from '../utilities/utilities';
+import { scrollTriggers, videoTrigger } from '../constant';
 
 export function createTrigger(
   accountId: string,

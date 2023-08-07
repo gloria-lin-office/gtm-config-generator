@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { exportGtmJSON } from './configuration-utilities';
+import { exportGtmJSON } from './configuration-utilities/configuration-utilities';
 import {
   GtmConfigGenerator,
   Tag,
@@ -10,12 +10,13 @@ import {
   formatSingleEventParameters,
   getAllObjectPaths,
   isBuiltInEvent,
-} from './utilities';
+} from './utilities/utilities';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConverterService {
+  // dataLayers stores all variable paths from the input JSON
   dataLayers: string[] = [];
   triggers: Trigger[] = [];
   tags: Tag[] = [];
@@ -70,14 +71,14 @@ export class ConverterService {
   // tags-related methods
   // ------------------------------------------------------------
 
-  private formatSingleTag(formattedParams: Parameter[], eventName: string) {
+  formatSingleTag(formattedParams: Parameter[], eventName: string) {
     if (isBuiltInEvent(eventName)) {
       return;
     }
     this.addTagIfNotExists(eventName, formattedParams);
   }
 
-  private addTagIfNotExists(eventName: string, formattedParams: Parameter[]) {
+  addTagIfNotExists(eventName: string, formattedParams: Parameter[]) {
     if (!this.tags.some((tag) => tag.name === eventName) && this.triggers) {
       this.tags.push({
         name: eventName,
@@ -93,7 +94,7 @@ export class ConverterService {
   // triggers-related methods
   // ------------------------------------------------------------
 
-  private formatSingleTrigger(eventName: string) {
+  formatSingleTrigger(eventName: string) {
     if (isBuiltInEvent(eventName)) {
       return;
     }
@@ -101,7 +102,7 @@ export class ConverterService {
     this.addTriggerIfNotExists(eventName);
   }
 
-  private addTriggerIfNotExists(eventName: string) {
+  addTriggerIfNotExists(eventName: string) {
     if (!this.triggers.some((trigger) => trigger.name === eventName)) {
       this.triggers.push({
         name: eventName,
@@ -114,7 +115,7 @@ export class ConverterService {
   // variables-related methods
   // ------------------------------------------------------------
 
-  private setMeasurementIdCustomJSVariable(data: { [x: string]: any }) {
+  setMeasurementIdCustomJSVariable(data: { [x: string]: any }) {
     const stagingMeasurementId = data['stagingMeasurementId'];
     const stagingUrl = data['stagingUrl'];
     const productionMeasurementId = data['productionMeasurementId'];
@@ -137,7 +138,7 @@ export class ConverterService {
 
   // data parsing
 
-  private parseAllSpecs(inputString: string) {
+  parseAllSpecs(inputString: string) {
     const allSpecs = JSON.parse(inputString);
     // Using 'map' to apply the 'parseSpec' function to each object in the 'allSpecs' array
     // 'bind(this)' is used to ensure that 'this' inside 'parseSpec' refers to the class instance
@@ -146,7 +147,7 @@ export class ConverterService {
     return allSpecs.map(this.parseSpec.bind(this));
   }
 
-  private parseSpec(parsedJSON: Record<string, string>) {
+  parseSpec(parsedJSON: Record<string, string>) {
     if (parsedJSON) {
       const { event, ...Json } = parsedJSON;
 
@@ -163,12 +164,12 @@ export class ConverterService {
     }
   }
 
-  private addDataLayer(paths: string[]) {
-    const uniquePaths = this.filterDuplicates(paths);
+  addDataLayer(paths: string[]) {
+    const uniquePaths = this.filterDuplicates(paths, this.dataLayers);
     this.dataLayers.push(...uniquePaths);
   }
 
-  private filterDuplicates(paths: string[]): string[] {
-    return paths.filter((path) => !this.dataLayers.includes(path));
+  filterDuplicates(paths: string[], dataLayers: string[]): string[] {
+    return paths.filter((path) => !dataLayers.includes(path));
   }
 }

@@ -1,5 +1,5 @@
 // mock the result of isIncludeVideo and isIncludeScroll
-jest.mock('../utilities', () => ({
+jest.mock('../utilities/utilities', () => ({
   isIncludeVideo: jest.fn().mockReturnValue(true),
   isIncludeScroll: jest.fn().mockReturnValue(true),
 }));
@@ -21,7 +21,7 @@ describe('Helper Functions', () => {
     measurementIdCustomJS: 'testMeasurementIdCustomJS',
   };
 
-  test('createMeasurementIdCJS function', () => {
+  it('should createMeasurementIdCJS function', () => {
     const result = createMeasurementIdCJS(
       mockData.accountId,
       mockData.containerId,
@@ -43,7 +43,7 @@ describe('Helper Functions', () => {
     });
   });
 
-  test('createVariable function', () => {
+  it('should createVariable function', () => {
     const result = createVariable(
       mockData.accountId,
       mockData.containerId,
@@ -74,7 +74,7 @@ describe('Helper Functions', () => {
     });
   });
 
-  test('getBuiltInVariables function', () => {
+  it('should getBuiltInVariables function', () => {
     // the result should be an array of objects, including the built-in variables
     // for now, we only have video and scroll built-in variables in use
     const result = getBuiltInVariables(
@@ -140,7 +140,7 @@ describe('Helper Functions', () => {
     ]);
   });
 
-  test('getVariables function', () => {
+  it('should getVariables function', () => {
     const result = getVariables(
       mockData.accountId,
       mockData.containerId,

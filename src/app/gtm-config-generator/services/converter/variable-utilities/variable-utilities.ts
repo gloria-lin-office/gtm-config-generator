@@ -1,6 +1,6 @@
 import { VariableConfig } from '../../../../interfaces/gtm-cofig-generator';
 import { scrollBuiltInVariable, videoBuiltInVariable } from '../constant';
-import { isIncludeScroll, isIncludeVideo } from '../utilities';
+import { isIncludeScroll, isIncludeVideo } from '../utilities/utilities';
 
 export function createMeasurementIdCJS(
   accountId: string,

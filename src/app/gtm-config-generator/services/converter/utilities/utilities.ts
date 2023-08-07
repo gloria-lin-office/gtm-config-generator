@@ -1,27 +1,39 @@
 import {
   NestedObject,
   Parameter,
-} from '../../../interfaces/gtm-cofig-generator';
+} from '../../../../interfaces/gtm-cofig-generator';
 import {
   BUILT_IN_EVENTS,
   BUILT_IN_SCROLL_EVENT,
   BUILT_IN_VIDEO_EVENTS,
-} from './constant';
+} from '../constant';
 
 export function isBuiltInEvent(eventName: string): boolean {
-  return BUILT_IN_EVENTS.some((_event) => eventName.includes(_event));
+  try {
+    return BUILT_IN_EVENTS.some((_event) => eventName.includes(_event));
+  } catch (error) {
+    throw new Error('Failed to check if event is built-in');
+  }
 }
 
 export function isIncludeVideo(data: Record<string, string>[]) {
-  return data.some((record) =>
-    BUILT_IN_VIDEO_EVENTS.includes(record['eventName'])
-  );
+  try {
+    return data.some((record) =>
+      BUILT_IN_VIDEO_EVENTS.includes(record['eventName'])
+    );
+  } catch (error) {
+    throw new Error('Failed to check if video is included');
+  }
 }
 
 export function isIncludeScroll(data: Record<string, string>[]) {
-  return data.some((record) =>
-    BUILT_IN_SCROLL_EVENT.includes(record['eventName'])
-  );
+  try {
+    return data.some((record) =>
+      BUILT_IN_SCROLL_EVENT.includes(record['eventName'])
+    );
+  } catch (error) {
+    throw new Error('Failed to check if scroll is included');
+  }
 }
 
 export function hasExistedDataLayer(dLReference: string, dataLayers: string[]) {

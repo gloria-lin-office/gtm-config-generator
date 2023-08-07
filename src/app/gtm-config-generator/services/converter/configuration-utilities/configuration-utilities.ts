@@ -4,14 +4,14 @@ import {
   Trigger,
   TriggerConfig,
   VariableConfig,
-} from '../../../interfaces/gtm-cofig-generator';
-import { getTags } from './tag-utilities';
-import { getTriggers } from './trigger-utilities';
-import { outputTime } from './utilities';
+} from '../../../../interfaces/gtm-cofig-generator';
+import { getTags } from '../tag-utilities/tag-utilities';
+import { getTriggers } from '../trigger-utilities/trigger-utilities';
+import { outputTime } from '../utilities/utilities';
 import {
   getBuiltInVariables,
   getVariables,
-} from './variable-utilities/variable-utilities';
+} from '../variable-utilities/variable-utilities';
 
 export function getGTMFinalConfiguration(
   accountId: string,

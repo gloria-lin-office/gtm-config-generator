@@ -2,13 +2,13 @@ import {
   Tag,
   TagConfig,
   TriggerConfig,
-} from '../../../interfaces/gtm-cofig-generator';
-import { scrollTag, videoTag } from './constant';
+} from '../../../../interfaces/gtm-cofig-generator';
+import { scrollTag, videoTag } from '../constant';
 import {
   hasExistedDataLayer,
   isIncludeScroll,
   isIncludeVideo,
-} from './utilities';
+} from '../utilities/utilities';
 
 export function createGA4Configuration(
   accountId: string,
