@@ -1,0 +1,8 @@
+html {
+  font-size: 62.5%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font: $font-weight-normal calc($font-size-h3 / $line-height-md) $font-family-sans-serif;
+}
