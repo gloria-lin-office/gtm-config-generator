@@ -33,7 +33,7 @@ export function createGA4Configuration(
       {
         type: 'TEMPLATE',
         key: 'measurementId',
-        value: '{{CustomJS - Measurement ID}}',
+        value: '{{Custom JS - Measurement ID}}',
       },
     ],
     firingTriggerId: ['2147479553'],
