@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { ConverterService } from '../../services/converter/converter.service';
@@ -21,6 +21,7 @@ import { FormBuilder } from '@angular/forms';
 import { GtmConfigGenerator } from 'src/app/interfaces/gtm-cofig-generator';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { containerName, gtmId, tagManagerUrl } from './test-data';
+import { fixJsonString } from '../../services/converter/utilities/utilities';
 
 @Component({
   selector: 'app-functional-card',
@@ -47,9 +48,9 @@ export class FunctionalCardComponent {
   // TODO: precise validation. For example, the tag manager url should be a valid url
   // gtmId should be a valid gtm id, such as GTM-XXXXXX
   form = this.fb.group({
-    tagManagerUrl: ['', Validators.required],
-    containerName: ['', Validators.required],
-    gtmId: ['', Validators.required],
+    tagManagerUrl: [tagManagerUrl, Validators.required],
+    containerName: [containerName, Validators.required],
+    gtmId: [gtmId, Validators.required],
   });
 
   // the dummy form for measurement id setting
@@ -65,7 +66,7 @@ export class FunctionalCardComponent {
 
   constructor(
     private converterService: ConverterService,
-    private editorService: EditorService,
+    public editorService: EditorService,
     private fb: FormBuilder
   ) {}
 
@@ -116,7 +117,7 @@ export class FunctionalCardComponent {
           // Create a link and programmatically click it
           let a = document.createElement('a');
           a.href = url;
-          a.download = 'file.json'; // or any other name you want
+          a.download = 'data.json'; // or any other name you want
           a.click(); // this will start download
 
           // Clean up after the download to avoid memory leaks
@@ -174,7 +175,6 @@ export class FunctionalCardComponent {
     console.log(this.measurementIdForm.value);
   }
 
-  // TODO: refactor this function out of this component
   preprocessInput(inputString: string) {
     try {
       // Attempt to parse the input JSON string
@@ -182,35 +182,13 @@ export class FunctionalCardComponent {
       return inputString;
     } catch (error) {
       // If parsing fails, attempt to fix common issues and try again
-      let fixedString = inputString;
-
-      // Replace single quotes with double quotes
-      fixedString = fixedString.replace(/'/g, '"');
-
-      // Fix missing quotes at the beginning of values
-      fixedString = fixedString.replace(
-        /:\s*([^,"{}\[\]\s][^,"{}\[\]]*)"/g,
-        ':"$1"'
-      );
-
-      // Remove any trailing commas
-      fixedString = fixedString.replace(/,\s*([\]}])/g, '$1');
-
-      // Wrap unquoted property names with double quotes
-      fixedString = fixedString.replace(
-        /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g,
-        '$1"$2"$3'
-      );
-
-      // Fix unquoted or partially-quoted key/value pairs with special characters
-      fixedString = fixedString.replace(
-        /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:\s*)([^",'{}\[\]\s][^,'\}\]\s]*)(\s*[,}\]])/g,
-        '$1"$2"$3"$4"$5'
-      );
+      let fixedString = '';
+      fixedString = fixJsonString(inputString);
 
       // Attempt to parse the fixed string
       try {
         JSON.parse(fixedString);
+        // If parsing succeeds, update the input JSON editor with the fixed string
         this.editorService.setContent(
           'inputJson',
           JSON.stringify(JSON.parse(fixedString), null, 2)

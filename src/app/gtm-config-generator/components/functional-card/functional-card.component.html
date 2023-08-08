@@ -4,7 +4,11 @@
       mat-stroked-button
       (click)="convertCode()"
       class="functional-card__actions__item"
-      [disabled]="!form.valid"
+      [disabled]="
+        !form.valid ||
+        (this.editorService.editor$.inputJson | async)?.state?.doc?.toString()
+          ?.length === 0
+      "
     >
       Convert
     </button>
@@ -12,7 +16,11 @@
       mat-stroked-button
       (click)="download()"
       class="functional-card__actions__item"
-      [disabled]="!form.valid"
+      [disabled]="
+        !form.valid ||
+        (this.editorService.editor$.inputJson | async)?.state?.doc?.toString()
+          ?.length === 0
+      "
     >
       Download
     </button>

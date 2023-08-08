@@ -130,3 +130,37 @@ export function formatSingleEventParameters(eventParams: string): Parameter[] {
   console.log('formattedParams after formatting: ', formattedParams);
   return formattedParams;
 }
+
+export function fixJsonString(inputString: string) {
+  try {
+    // If parsing fails, attempt to fix common issues and try again
+    let fixedString = inputString;
+
+    // Replace single quotes with double quotes
+    fixedString = fixedString.replace(/'/g, '"');
+
+    // Fix missing quotes at the beginning of values
+    fixedString = fixedString.replace(
+      /:\s*([^,"{}\[\]\s][^,"{}\[\]]*)"/g,
+      ':"$1"'
+    );
+
+    // Remove any trailing commas
+    fixedString = fixedString.replace(/,\s*([\]}])/g, '$1');
+
+    // Wrap unquoted property names with double quotes
+    fixedString = fixedString.replace(
+      /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g,
+      '$1"$2"$3'
+    );
+
+    // Fix unquoted or partially-quoted key/value pairs with special characters
+    fixedString = fixedString.replace(
+      /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:\s*)([^",'{}\[\]\s][^,'\}\]\s]*)(\s*[,}\]])/g,
+      '$1"$2"$3"$4"$5'
+    );
+    return fixedString;
+  } catch (error) {
+    throw new Error('Failed to fix JSON parsing issues');
+  }
+}
