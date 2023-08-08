@@ -19,5 +19,5 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./main-page.component.scss'],
 })
 export class MainPageComponent {
-  exampleInputJson = ['Please input your json here'];
+  exampleInputJson = ['Please input your JSON data or try JS object here'];
 }
