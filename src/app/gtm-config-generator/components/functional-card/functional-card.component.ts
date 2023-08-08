@@ -22,6 +22,8 @@ import { GtmConfigGenerator } from 'src/app/interfaces/gtm-cofig-generator';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { containerName, gtmId, tagManagerUrl } from './test-data';
 import { fixJsonString } from '../../services/converter/utilities/utilities';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-functional-card',
@@ -39,6 +41,7 @@ import { fixJsonString } from '../../services/converter/utilities/utilities';
     OverlayModule,
     MeasurementIdTableComponent,
     MatCheckboxModule,
+    MatDialogModule,
   ],
   templateUrl: './functional-card.component.html',
   styleUrls: ['./functional-card.component.scss'],
@@ -67,7 +70,8 @@ export class FunctionalCardComponent {
   constructor(
     private converterService: ConverterService,
     public editorService: EditorService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public dialog: MatDialog
   ) {}
 
   convertCode() {
@@ -195,15 +199,19 @@ export class FunctionalCardComponent {
         );
         return fixedString;
       } catch (error) {
-        console.error(
-          'Unable to fix JSON parsing issues.',
-          `input`,
-          inputString,
-          `fixed`,
-          fixedString
-        );
+        this.openDialog(error);
+        console.error(error);
         return 'null';
       }
     }
+  }
+
+  openDialog(data: any) {
+    console.log('error message', data.message);
+    this.dialog.open(ErrorDialogComponent, {
+      data: {
+        message: data.message,
+      },
+    });
   }
 }
