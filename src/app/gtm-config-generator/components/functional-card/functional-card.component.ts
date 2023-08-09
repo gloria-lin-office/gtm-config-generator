@@ -24,6 +24,7 @@ import { containerName, gtmId, tagManagerUrl } from './test-data';
 import { fixJsonString } from '../../services/converter/utilities/utilities';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
 
 @Component({
   selector: 'app-functional-card',
@@ -78,58 +79,45 @@ export class FunctionalCardComponent {
     combineLatest([this.editorService.editor$.inputJson])
       .pipe(
         tap(([jsonEditor]) => {
-          const json = this.preprocessInput(jsonEditor.state.doc.toString());
-          const measurementTableData = this.measurementIdForm.value;
-          const { accountId, containerId } = this.extractAccountAndContainerId(
-            this.form.get('tagManagerUrl')?.value as string
-          );
+          try {
+            const json = this.preprocessInput(jsonEditor.state.doc.toString());
+            const measurementTableData = this.measurementIdForm.value;
+            const { accountId, containerId } =
+              this.extractAccountAndContainerId(
+                this.form.get('tagManagerUrl')?.value as string
+              );
 
-          const gtmConfigGenerator: GtmConfigGenerator = {
-            accountId: accountId,
-            containerId: containerId,
-            containerName: this.form.get('containerName')?.value as string,
-            gtmId: this.form.get('gtmId')?.value as string,
-            specs: json,
-            stagingUrl: measurementTableData.stagingUrl as string,
-            stagingMeasurementId:
-              measurementTableData.stagingMeasurementId as string,
-            productionUrl: measurementTableData.productionUrl as string,
-            productionMeasurementId:
-              measurementTableData.productionMeasurementId as string,
-          };
+            const gtmConfigGenerator: GtmConfigGenerator = {
+              accountId: accountId,
+              containerId: containerId,
+              containerName: this.form.get('containerName')?.value as string,
+              gtmId: this.form.get('gtmId')?.value as string,
+              specs: json,
+              stagingUrl: measurementTableData.stagingUrl as string,
+              stagingMeasurementId:
+                measurementTableData.stagingMeasurementId as string,
+              productionUrl: measurementTableData.productionUrl as string,
+              productionMeasurementId:
+                measurementTableData.productionMeasurementId as string,
+            };
 
-          const result = this.converterService.convert(gtmConfigGenerator);
-          console.log(result);
-          this.editorService.setContent(
-            'outputJson',
-            JSON.stringify(result, null, 2)
-          );
+            const result = this.converterService.convert(gtmConfigGenerator);
+            console.log(result);
+            this.editorService.setContent(
+              'outputJson',
+              JSON.stringify(result, null, 2)
+            );
+            this.openSuccessConversionDialog(result);
+          } catch (error) {
+            this.openDialog(error);
+            console.error(error);
+          }
         })
       )
       .subscribe();
   }
 
-  download() {
-    combineLatest([this.editorService.editor$.outputJson])
-      .pipe(
-        tap(([jsonEditor]) => {
-          const json = jsonEditor.state.doc.toString();
-          // Create a Blob from the JSON string
-          let blob = new Blob([json], { type: 'application/json' }),
-            url = URL.createObjectURL(blob);
-
-          // Create a link and programmatically click it
-          let a = document.createElement('a');
-          a.href = url;
-          a.download = 'data.json'; // or any other name you want
-          a.click(); // this will start download
-
-          // Clean up after the download to avoid memory leaks
-          URL.revokeObjectURL(url);
-        })
-      )
-      .subscribe();
-  }
+  onUpload() {}
 
   setMeasurementId() {
     this.isOpen = true;
@@ -212,6 +200,12 @@ export class FunctionalCardComponent {
       data: {
         message: data.message,
       },
+    });
+  }
+
+  openSuccessConversionDialog(configuration: any) {
+    this.dialog.open(ConversionSuccessDialogComponent, {
+      data: configuration,
     });
   }
 }

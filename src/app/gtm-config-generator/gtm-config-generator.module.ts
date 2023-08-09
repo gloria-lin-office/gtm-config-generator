@@ -8,6 +8,7 @@ import { MeasurementIdTableComponent } from './components/measurement-id-table/m
 import { ArticleComponent } from './components/article/article.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
+import { ConversionSuccessDialogComponent } from './components/conversion-success-dialog/conversion-success-dialog.component';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { ErrorDialogComponent } from './components/error-dialog/error-dialog.com
     ArticleComponent,
     FooterComponent,
     ErrorDialogComponent,
+    ConversionSuccessDialogComponent,
   ],
   declarations: [],
 })
