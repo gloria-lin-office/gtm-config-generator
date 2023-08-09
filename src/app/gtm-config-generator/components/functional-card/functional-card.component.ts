@@ -25,6 +25,7 @@ import { fixJsonString } from '../../services/converter/utilities/utilities';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
+import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 
 @Component({
   selector: 'app-functional-card',
@@ -117,7 +118,9 @@ export class FunctionalCardComponent {
       .subscribe();
   }
 
-  onUpload() {}
+  onUpload() {
+    this.openFileUploadDialog();
+  }
 
   setMeasurementId() {
     this.isOpen = true;
@@ -207,5 +210,9 @@ export class FunctionalCardComponent {
     this.dialog.open(ConversionSuccessDialogComponent, {
       data: configuration,
     });
+  }
+
+  openFileUploadDialog() {
+    this.dialog.open(FileUploadDialogComponent);
   }
 }
