@@ -4,17 +4,20 @@
       mat-stroked-button
       (click)="convertCode()"
       class="functional-card__actions__item"
-      [disabled]="!form.valid"
+      [disabled]="
+        !form.valid ||
+        (this.editorService.editor$.inputJson | async)?.state?.doc?.toString()
+          ?.length === 0
+      "
     >
       Convert
     </button>
     <button
       mat-stroked-button
-      (click)="download()"
+      (click)="onUpload()"
       class="functional-card__actions__item"
-      [disabled]="!form.valid"
     >
-      Download
+      Upload
     </button>
   </div>
   <div [formGroup]="form" class="functional-card__form">
@@ -50,7 +53,7 @@
     class="functional-card__measurement"
     [color]="isSettingMeasurementId ? 'success' : ''"
   >
-    Set Measurement ID
+    Set Measurement ID (Optional)
   </button>
   <app-measurement-id-table
     [isOpen]="isOpen"

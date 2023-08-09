@@ -1,9 +1,11 @@
 import { ElementRef, Injectable } from '@angular/core';
 import { EditorView } from 'codemirror';
 import { placeholder } from '@codemirror/view';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { jsonLightEditorExtensions } from './editor-extensions';
 import { editorStyles } from './editor-style';
+import { linter, lintGutter } from '@codemirror/lint';
+import { jsonParseLinter } from '@codemirror/lang-json';
 
 export type EditorExtension = 'inputJson' | 'outputJson';
 type ExtensionArray = any[];
@@ -40,7 +42,21 @@ export class EditorService {
     content?: string
   ) {
     let editorView = null;
-    if (extension === 'inputJson' || extension === 'outputJson') {
+    if (extension === 'inputJson') {
+      editorView = new EditorView({
+        extensions: [
+          ...this.editorExtensions[extension],
+          linter(jsonParseLinter()),
+          lintGutter(),
+          EditorView.theme(editorStyles),
+          EditorView.lineWrapping,
+          placeholder(
+            content ? content : this.contentSubjects[extension].getValue()
+          ),
+        ],
+        parent: elementRef.nativeElement,
+      });
+    } else if (extension === 'outputJson') {
       editorView = new EditorView({
         extensions: [
           ...this.editorExtensions[extension],

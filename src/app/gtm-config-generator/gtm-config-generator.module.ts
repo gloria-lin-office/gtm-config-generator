@@ -7,6 +7,9 @@ import { FunctionalCardComponent } from './components/functional-card/functional
 import { MeasurementIdTableComponent } from './components/measurement-id-table/measurement-id-table.component';
 import { ArticleComponent } from './components/article/article.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
+import { ConversionSuccessDialogComponent } from './components/conversion-success-dialog/conversion-success-dialog.component';
+import { FileUploadDialogComponent } from './components/file-upload-dialog/file-upload-dialog.component';
 
 @NgModule({
   imports: [
@@ -18,6 +21,9 @@ import { FooterComponent } from './components/footer/footer.component';
     MeasurementIdTableComponent,
     ArticleComponent,
     FooterComponent,
+    ErrorDialogComponent,
+    ConversionSuccessDialogComponent,
+    FileUploadDialogComponent,
   ],
   declarations: [],
 })

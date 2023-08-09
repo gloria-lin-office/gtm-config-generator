@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { ConverterService } from '../../services/converter/converter.service';
@@ -21,6 +21,11 @@ import { FormBuilder } from '@angular/forms';
 import { GtmConfigGenerator } from 'src/app/interfaces/gtm-cofig-generator';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { containerName, gtmId, tagManagerUrl } from './test-data';
+import { fixJsonString } from '../../services/converter/utilities/utilities';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
+import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 
 @Component({
   selector: 'app-functional-card',
@@ -38,6 +43,7 @@ import { containerName, gtmId, tagManagerUrl } from './test-data';
     OverlayModule,
     MeasurementIdTableComponent,
     MatCheckboxModule,
+    MatDialogModule,
   ],
   templateUrl: './functional-card.component.html',
   styleUrls: ['./functional-card.component.scss'],
@@ -47,9 +53,9 @@ export class FunctionalCardComponent {
   // TODO: precise validation. For example, the tag manager url should be a valid url
   // gtmId should be a valid gtm id, such as GTM-XXXXXX
   form = this.fb.group({
-    tagManagerUrl: ['', Validators.required],
-    containerName: ['', Validators.required],
-    gtmId: ['', Validators.required],
+    tagManagerUrl: [tagManagerUrl, Validators.required],
+    containerName: [containerName, Validators.required],
+    gtmId: [gtmId, Validators.required],
   });
 
   // the dummy form for measurement id setting
@@ -65,65 +71,55 @@ export class FunctionalCardComponent {
 
   constructor(
     private converterService: ConverterService,
-    private editorService: EditorService,
-    private fb: FormBuilder
+    public editorService: EditorService,
+    private fb: FormBuilder,
+    public dialog: MatDialog
   ) {}
 
   convertCode() {
     combineLatest([this.editorService.editor$.inputJson])
       .pipe(
         tap(([jsonEditor]) => {
-          const json = this.preprocessInput(jsonEditor.state.doc.toString());
-          const measurementTableData = this.measurementIdForm.value;
-          const { accountId, containerId } = this.extractAccountAndContainerId(
-            this.form.get('tagManagerUrl')?.value as string
-          );
+          try {
+            const json = this.preprocessInput(jsonEditor.state.doc.toString());
+            const measurementTableData = this.measurementIdForm.value;
+            const { accountId, containerId } =
+              this.extractAccountAndContainerId(
+                this.form.get('tagManagerUrl')?.value as string
+              );
 
-          const gtmConfigGenerator: GtmConfigGenerator = {
-            accountId: accountId,
-            containerId: containerId,
-            containerName: this.form.get('containerName')?.value as string,
-            gtmId: this.form.get('gtmId')?.value as string,
-            specs: json,
-            stagingUrl: measurementTableData.stagingUrl as string,
-            stagingMeasurementId:
-              measurementTableData.stagingMeasurementId as string,
-            productionUrl: measurementTableData.productionUrl as string,
-            productionMeasurementId:
-              measurementTableData.productionMeasurementId as string,
-          };
+            const gtmConfigGenerator: GtmConfigGenerator = {
+              accountId: accountId,
+              containerId: containerId,
+              containerName: this.form.get('containerName')?.value as string,
+              gtmId: this.form.get('gtmId')?.value as string,
+              specs: json,
+              stagingUrl: measurementTableData.stagingUrl as string,
+              stagingMeasurementId:
+                measurementTableData.stagingMeasurementId as string,
+              productionUrl: measurementTableData.productionUrl as string,
+              productionMeasurementId:
+                measurementTableData.productionMeasurementId as string,
+            };
 
-          const result = this.converterService.convert(gtmConfigGenerator);
-          console.log(result);
-          this.editorService.setContent(
-            'outputJson',
-            JSON.stringify(result, null, 2)
-          );
+            const result = this.converterService.convert(gtmConfigGenerator);
+            console.log(result);
+            this.editorService.setContent(
+              'outputJson',
+              JSON.stringify(result, null, 2)
+            );
+            this.openSuccessConversionDialog(result);
+          } catch (error) {
+            this.openDialog(error);
+            console.error(error);
+          }
         })
       )
       .subscribe();
   }
 
-  download() {
-    combineLatest([this.editorService.editor$.outputJson])
-      .pipe(
-        tap(([jsonEditor]) => {
-          const json = jsonEditor.state.doc.toString();
-          // Create a Blob from the JSON string
-          let blob = new Blob([json], { type: 'application/json' }),
-            url = URL.createObjectURL(blob);
-
-          // Create a link and programmatically click it
-          let a = document.createElement('a');
-          a.href = url;
-          a.download = 'file.json'; // or any other name you want
-          a.click(); // this will start download
-
-          // Clean up after the download to avoid memory leaks
-          URL.revokeObjectURL(url);
-        })
-      )
-      .subscribe();
+  onUpload() {
+    this.openFileUploadDialog();
   }
 
   setMeasurementId() {
@@ -174,7 +170,6 @@ export class FunctionalCardComponent {
     console.log(this.measurementIdForm.value);
   }
 
-  // TODO: refactor this function out of this component
   preprocessInput(inputString: string) {
     try {
       // Attempt to parse the input JSON string
@@ -182,50 +177,42 @@ export class FunctionalCardComponent {
       return inputString;
     } catch (error) {
       // If parsing fails, attempt to fix common issues and try again
-      let fixedString = inputString;
-
-      // Replace single quotes with double quotes
-      fixedString = fixedString.replace(/'/g, '"');
-
-      // Fix missing quotes at the beginning of values
-      fixedString = fixedString.replace(
-        /:\s*([^,"{}\[\]\s][^,"{}\[\]]*)"/g,
-        ':"$1"'
-      );
-
-      // Remove any trailing commas
-      fixedString = fixedString.replace(/,\s*([\]}])/g, '$1');
-
-      // Wrap unquoted property names with double quotes
-      fixedString = fixedString.replace(
-        /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g,
-        '$1"$2"$3'
-      );
-
-      // Fix unquoted or partially-quoted key/value pairs with special characters
-      fixedString = fixedString.replace(
-        /([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:\s*)([^",'{}\[\]\s][^,'\}\]\s]*)(\s*[,}\]])/g,
-        '$1"$2"$3"$4"$5'
-      );
+      let fixedString = '';
+      fixedString = fixJsonString(inputString);
 
       // Attempt to parse the fixed string
       try {
         JSON.parse(fixedString);
+        // If parsing succeeds, update the input JSON editor with the fixed string
         this.editorService.setContent(
           'inputJson',
           JSON.stringify(JSON.parse(fixedString), null, 2)
         );
         return fixedString;
       } catch (error) {
-        console.error(
-          'Unable to fix JSON parsing issues.',
-          `input`,
-          inputString,
-          `fixed`,
-          fixedString
-        );
+        this.openDialog(error);
+        console.error(error);
         return 'null';
       }
     }
+  }
+
+  openDialog(data: any) {
+    console.log('error message', data.message);
+    this.dialog.open(ErrorDialogComponent, {
+      data: {
+        message: data.message,
+      },
+    });
+  }
+
+  openSuccessConversionDialog(configuration: any) {
+    this.dialog.open(ConversionSuccessDialogComponent, {
+      data: configuration,
+    });
+  }
+
+  openFileUploadDialog() {
+    this.dialog.open(FileUploadDialogComponent);
   }
 }
