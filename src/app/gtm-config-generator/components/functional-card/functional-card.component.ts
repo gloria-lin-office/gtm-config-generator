@@ -109,6 +109,10 @@ export class FunctionalCardComponent {
               JSON.stringify(result, null, 2)
             );
             this.openSuccessConversionDialog(result);
+
+            window.dataLayer.push({
+              event: 'btn_convert_click',
+            });
           } catch (error) {
             this.openDialog(error);
             console.error(error);
@@ -120,6 +124,9 @@ export class FunctionalCardComponent {
 
   onUpload() {
     this.openFileUploadDialog();
+    window.dataLayer.push({
+      event: 'btn_upload_click',
+    });
   }
 
   setMeasurementId() {

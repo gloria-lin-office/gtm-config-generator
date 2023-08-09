@@ -62,6 +62,10 @@ export class ConversionSuccessDialogComponent {
     // Clean up after the download to avoid memory leaks
     URL.revokeObjectURL(url);
     this.dialog.closeAll();
+
+    window.dataLayer.push({
+      event: 'btn_download_click',
+    });
   }
 
   onClipBoard() {
@@ -70,6 +74,10 @@ export class ConversionSuccessDialogComponent {
       () => {
         console.log('Async: Copying to clipboard was successful!');
         this.dialog.closeAll();
+
+        window.dataLayer.push({
+          event: 'btn_copy_click',
+        });
       },
       (err) => {
         console.error('Async: Could not copy text: ', err);
