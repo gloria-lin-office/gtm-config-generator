@@ -4,6 +4,8 @@ import { FunctionalCardComponent } from '../functional-card/functional-card.comp
 import { ArticleComponent } from '../article/article.component';
 import { FooterComponent } from '../footer/footer.component';
 import { CommonModule } from '@angular/common';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { XlsxSidenavFormComponent } from '../xlsx-sidenav-form/xlsx-sidenav-form.component';
 
 @Component({
   selector: 'app-main-page',
@@ -14,6 +16,8 @@ import { CommonModule } from '@angular/common';
     ArticleComponent,
     FooterComponent,
     CommonModule,
+    MatSidenavModule,
+    XlsxSidenavFormComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],

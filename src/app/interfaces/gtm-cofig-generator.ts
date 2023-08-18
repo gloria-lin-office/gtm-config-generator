@@ -79,3 +79,7 @@ export interface GtmConfigGenerator {
   productionUrl?: string;
   productionMeasurementId?: string;
 }
+
+export interface DataRow {
+  [key: string]: string;
+}

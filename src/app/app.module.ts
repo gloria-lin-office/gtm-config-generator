@@ -7,7 +7,8 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MainPageComponent } from './main-page/main-page.component';
 
-import { ProjectRetrieverService } from 'src/services/project-retriever.service';
+import { ProjectRetrieverService } from './services/project-retriever/project-retriever.service';
+import { WebWorkerService } from './services/web-worker/web-worker.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -18,7 +19,7 @@ import { ProjectRetrieverService } from 'src/services/project-retriever.service'
     HttpClientModule,
     MainPageComponent,
   ],
-  providers: [ProjectRetrieverService],
+  providers: [ProjectRetrieverService, WebWorkerService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { ProjectComponent } from '../project/project.component';
 import { Project } from '../interfaces/project';
-import { ProjectRetrieverService } from 'src/services/project-retriever.service';
+import { ProjectRetrieverService } from '../services/project-retriever/project-retriever.service';
 import { Observable, map } from 'rxjs';
 
 @Component({

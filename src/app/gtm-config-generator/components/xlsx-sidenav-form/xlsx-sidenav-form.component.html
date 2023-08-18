@@ -1,0 +1,98 @@
+<div class="xlsx-sidenav-form">
+  <mat-sidenav
+    class="xlsx-sidenav-form__sidenav"
+    opened="false"
+    #sidenav
+    mode="side"
+    position="end"
+    autoFocus="true"
+    fixedInViewport="true"
+    fixedTopGap="0"
+    fixedBottomGap="0"
+  >
+    <div class="xlsx-sidenav-form__header">
+      <div class="xlsx-sidenav-form__header__title">
+        <mat-icon (click)="sidenav.toggle()">highlight_off</mat-icon>
+        <div>
+          <u>{{ fileName$ | async }}</u>
+        </div>
+      </div>
+      <div>
+        <button
+          mat-raised-button
+          (click)="sidenav.toggle(); retrieveSpecsFromSource()"
+          color="primary"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+    <mat-sidenav-content class="xlsx-sidenav-form__sidenav__content">
+      <mat-card
+        class="mat-elevation-z8 xlsx-sidenav-form__sidenav__content__card"
+      >
+        <mat-card-content>
+          <form [formGroup]="form" class="xlsx-sidenav-form__form">
+            <div class="xlsx-sidenav-form__form__field">
+              <div class="xlsx-sidenav-form__form__field__header">
+                <label>Worksheet Name</label>
+                <mat-icon
+                  matSuffix
+                  matTooltip="Select the worksheet that contains the data"
+                  >help_outline</mat-icon
+                >
+              </div>
+              <select
+                formControlName="worksheetNames"
+                (change)="switchToSelectedSheet($event)"
+              >
+                <option *ngFor="let worksheetName of worksheetNames$ | async">
+                  {{ worksheetName }}
+                </option>
+              </select>
+            </div>
+            <div class="xlsx-sidenav-form__form__field">
+              <div class="xlsx-sidenav-form__form__field__header">
+                <label>Data Column Name</label>
+                <mat-icon matSuffix matTooltip="Select the Data Column Name"
+                  >help_outline</mat-icon
+                >
+              </div>
+              <input type="text" formControlName="dataColumnName" />
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="xlsx-sidenav-form__sidenav__card">
+        <div>
+          <mat-card-content
+            #scrollContainer
+            id="scrollContainer"
+            style="overflow: scroll; transform: rotateX(180deg); height: 70vh"
+          >
+            <table
+              mat-table
+              [dataSource]="displayedDataSource"
+              style="transform: rotateX(180deg)"
+            >
+              <ng-container
+                matColumnDef="{{ column }}"
+                *ngFor="let column of displayedColumns"
+              >
+                <th mat-header-cell *matHeaderCellDef>
+                  {{ column.replace("__EMPTY", "empty_title") }}
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element[column] }}
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+          </mat-card-content>
+        </div>
+      </mat-card>
+    </mat-sidenav-content>
+  </mat-sidenav>
+</div>
