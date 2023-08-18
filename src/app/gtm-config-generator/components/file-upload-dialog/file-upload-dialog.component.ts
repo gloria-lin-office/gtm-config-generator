@@ -8,6 +8,8 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { NgIf } from '@angular/common';
 import { EditorService } from '../../services/editor/editor.service';
 import { BehaviorSubject, tap } from 'rxjs';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { EventBusService } from '../../../services/event-bus/event-bus.service';
 
 @Component({
   selector: 'app-file-upload-dialog',
@@ -19,6 +21,7 @@ import { BehaviorSubject, tap } from 'rxjs';
     MatFormFieldModule,
     MatInputModule,
     NgIf,
+    MatSidenavModule,
   ],
   template: `<div class="file-upload-dialog">
     <mat-dialog-content class="file-upload-dialog__actions">
@@ -26,6 +29,18 @@ import { BehaviorSubject, tap } from 'rxjs';
         <button type="button" mat-button (click)="fileInput.click()">
           <mat-icon>cloud_upload</mat-icon>
           Upload JSON File
+        </button>
+        <input
+          hidden
+          (change)="onFileSelected($event)"
+          #fileInput
+          type="file"
+        />
+      </div>
+      <div class="file-upload-dialog__actions__action">
+        <button type="button" mat-button (click)="fileInput.click()">
+          <mat-icon>cloud_upload</mat-icon>
+          Upload XLSX File
         </button>
         <input
           hidden
@@ -61,10 +76,19 @@ import { BehaviorSubject, tap } from 'rxjs';
   ],
 })
 export class FileUploadDialogComponent {
-  constructor(public dialog: MatDialog, private editorService: EditorService) {}
+  constructor(
+    public dialog: MatDialog,
+    private editorService: EditorService,
+    private eventBusService: EventBusService
+  ) {}
 
   selectedFile: File | null = null;
   fileContent = new BehaviorSubject<any>(null);
+
+  handFileToSidenavForm(file: File) {
+    this.dialog.closeAll();
+    this.eventBusService.emit('toggleDrawer', file);
+  }
 
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
@@ -75,8 +99,14 @@ export class FileUploadDialogComponent {
 
       if (fileExtension === 'json' && fileType === 'application/json') {
         this.selectedFile = file;
-        this.readFileContent(file);
-        this.handleFileContent();
+        this.handleJsonFile(file);
+      } else if (
+        fileExtension === 'xlsx' &&
+        fileType ===
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ) {
+        this.selectedFile = file;
+        this.handFileToSidenavForm(file);
       } else {
         this.selectedFile = null;
         this.dialog.open(ErrorDialogComponent, {
@@ -88,7 +118,12 @@ export class FileUploadDialogComponent {
     }
   }
 
-  readFileContent(file: File): void {
+  handleJsonFile(file: File): void {
+    this.readJsonFileContent(file);
+    this.handleJsonFileContent();
+  }
+
+  readJsonFileContent(file: File): void {
     const reader = new FileReader();
 
     reader.onload = (e: any) => {
@@ -117,7 +152,7 @@ export class FileUploadDialogComponent {
     reader.readAsText(file);
   }
 
-  handleFileContent() {
+  handleJsonFileContent() {
     // handle the file content after it has been read
     this.fileContent
       .pipe(
