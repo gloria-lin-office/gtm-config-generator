@@ -10,6 +10,8 @@ import { FooterComponent } from './components/footer/footer.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 import { ConversionSuccessDialogComponent } from './components/conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from './components/file-upload-dialog/file-upload-dialog.component';
+import { XlsxSidenavFormComponent } from './components/xlsx-sidenav-form/xlsx-sidenav-form.component';
+import { EventBusService } from '../services/event-bus/event-bus.service';
 
 @NgModule({
   imports: [
@@ -24,7 +26,9 @@ import { FileUploadDialogComponent } from './components/file-upload-dialog/file-
     ErrorDialogComponent,
     ConversionSuccessDialogComponent,
     FileUploadDialogComponent,
+    XlsxSidenavFormComponent,
   ],
+  providers: [EventBusService],
   declarations: [],
 })
 export class GtmConfigGeneratorModule {}
