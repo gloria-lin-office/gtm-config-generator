@@ -12,7 +12,12 @@ import { EventBusService } from '../../../services/event-bus/event-bus.service';
 import { BehaviorSubject, Subscription, filter, tap } from 'rxjs';
 import { ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
@@ -27,6 +32,8 @@ import {
   filterNonEmptyData,
 } from './xlsx-helper';
 import { DataRow } from '../../../interfaces/gtm-cofig-generator';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -82,9 +89,11 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   worksheetNames$ = new BehaviorSubject<string[]>(['']);
   workbook$ = new BehaviorSubject<any>(null);
 
+  dataColumnNameString = 'dataLayer specs';
+
   form = this.fb.group({
     worksheetNames: [''],
-    dataColumnName: ['dataLayer specs'],
+    dataColumnName: ['', Validators.required],
   });
 
   scrollHeight$ = new BehaviorSubject<number>(0);
@@ -94,7 +103,7 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
     private fb: FormBuilder,
     private webWorkerService: WebWorkerService,
     private editorService: EditorService,
-    private renderer: Renderer2
+    private dialog: MatDialog
   ) {}
 
   ngAfterViewInit() {
@@ -152,7 +161,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
             this.displayedColumns = Object.keys(this.displayedDataSource[0]);
           } else if (data.action === 'switchSheet') {
             this.displayedDataSource = filterNonEmptyData(data.jsonData);
-            console.log('this.displayedDataSource', this.displayedDataSource);
             this.displayedColumns = Object.keys(this.displayedDataSource[0]);
           } else if (data.action === 'extractSpecs') {
             this.processAndSetSpecsContent(data.jsonData);
@@ -178,17 +186,36 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   }
 
   retrieveSpecsFromSource() {
-    const spec = this.form.get('dataColumnName')?.value;
-    this.webWorkerService.postMessage('message', {
-      action: 'extractSpecs',
-      data: this.dataSource,
-      spec,
-    });
+    let titleName;
+    try {
+      titleName = this.form.get('dataColumnName')?.value;
+      this.webWorkerService.postMessage('message', {
+        action: 'extractSpecs',
+        data: this.dataSource,
+        titleName,
+      });
+    } catch (error) {
+      this.dialog.open(ErrorDialogComponent, {
+        data: {
+          message: `Failed to extract specs from the title: ${titleName}`,
+        },
+      });
+    }
   }
 
   processAndSetSpecsContent(data: DataRow[]) {
     const gtmSpecs = filterGtmSpecsFromData(data);
-    const cleanedGtmSpecs = gtmSpecs.map(convertSpecStringToObject);
+    const cleanedGtmSpecs = gtmSpecs.map((spec) => {
+      try {
+        return convertSpecStringToObject(spec);
+      } catch (error) {
+        this.dialog.open(ErrorDialogComponent, {
+          data: {
+            message: `Failed to parse the following spec: ${spec}`,
+          },
+        });
+      }
+    });
     const events = cleanedGtmSpecs.filter((spec) => spec && spec.event);
     this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
   }
