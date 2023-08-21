@@ -23,15 +23,18 @@ addEventListener('message', (event) => {
     case 'switchSheet': {
       const { workbook, sheetName } = event.data;
       let jsonData = getSheetData(workbook, sheetName);
-      // jsonData = filterNonEmptyData(jsonData);
-      console.log(jsonData);
       postMessage({ action: `${action}`, jsonData });
       break;
     }
     case 'extractSpecs': {
-      const { data, spec } = event.data;
-      const jsonData = extractSpecs(data, spec);
-      console.log(jsonData);
+      const { data, titleName } = event.data;
+      const jsonData = extractSpecs(data, titleName);
+      postMessage({ action: `${action}`, jsonData });
+      break;
+    }
+    case 'previewData': {
+      const { data, titleName } = event.data;
+      const jsonData = extractSpecs(data, titleName);
       postMessage({ action: `${action}`, jsonData });
       break;
     }
@@ -82,6 +85,5 @@ function extractSpecs(data: DataRow[], specTitle: string): DataRow[] {
       specs.push({ [key]: value });
     }
   }
-
   return specs;
 }

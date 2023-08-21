@@ -1,15 +1,9 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Renderer2,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { EventBusService } from '../../../services/event-bus/event-bus.service';
-import { BehaviorSubject, Subscription, filter, tap } from 'rxjs';
+import { BehaviorSubject, tap } from 'rxjs';
 import { ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -34,6 +28,7 @@ import {
 import { DataRow } from '../../../interfaces/gtm-cofig-generator';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { setInitialScrollTop } from './dom-helper';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -90,10 +85,12 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   workbook$ = new BehaviorSubject<any>(null);
 
   dataColumnNameString = 'dataLayer specs';
+  isPreviewing = true;
+  isRenderingJson = false;
 
   form = this.fb.group({
     worksheetNames: [''],
-    dataColumnName: ['', Validators.required],
+    dataColumnName: [this.dataColumnNameString, Validators.required],
   });
 
   scrollHeight$ = new BehaviorSubject<number>(0);
@@ -116,7 +113,7 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
         })
       )
       .subscribe();
-    this.setInitialScrollTop();
+    setInitialScrollTop(this.scrollContainer);
   }
 
   toggleSidenav() {
@@ -162,6 +159,18 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
           } else if (data.action === 'switchSheet') {
             this.displayedDataSource = filterNonEmptyData(data.jsonData);
             this.displayedColumns = Object.keys(this.displayedDataSource[0]);
+            this.dataSource = data.jsonData;
+          } else if (data.action === 'previewData') {
+            console.log(data.jsonData, ' from previewData');
+            const events = this.processSpecs(data.jsonData);
+            const eventsData = events.map((event) => {
+              return {
+                spec: JSON.parse(JSON.stringify(event, null, 2)),
+              };
+            });
+            this.isRenderingJson = true;
+            this.displayedDataSource = eventsData;
+            this.displayedColumns = ['spec'];
           } else if (data.action === 'extractSpecs') {
             this.processAndSetSpecsContent(data.jsonData);
           }
@@ -189,6 +198,7 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
     let titleName;
     try {
       titleName = this.form.get('dataColumnName')?.value;
+      console.log('data source: ', this.dataSource);
       this.webWorkerService.postMessage('message', {
         action: 'extractSpecs',
         data: this.dataSource,
@@ -203,8 +213,9 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
     }
   }
 
-  processAndSetSpecsContent(data: DataRow[]) {
+  processSpecs(data: DataRow[]) {
     const gtmSpecs = filterGtmSpecsFromData(data);
+    console.log(gtmSpecs, ' gtmSpecs from processSpecs');
     const cleanedGtmSpecs = gtmSpecs.map((spec) => {
       try {
         return convertSpecStringToObject(spec);
@@ -216,24 +227,30 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
         });
       }
     });
-    const events = cleanedGtmSpecs.filter((spec) => spec && spec.event);
+    return cleanedGtmSpecs.filter((spec) => spec && spec.event);
+  }
+
+  processAndSetSpecsContent(data: DataRow[]) {
+    const events = this.processSpecs(data);
+    console.log(events, ' from processAndSetSpecsContent');
     this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
   }
 
-  setInitialScrollTop() {
-    const observer = new MutationObserver(() => {
-      const element = this.scrollContainer.nativeElement;
-      if (element.scrollHeight > 0) {
-        element.scrollTop = element.scrollHeight;
-        observer.disconnect(); // Disconnect after setting scrollTop
-      }
-    });
-
-    observer.observe(this.scrollContainer.nativeElement, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false,
-    });
+  previewData() {
+    let titleName;
+    try {
+      titleName = this.form.get('dataColumnName')?.value;
+      this.webWorkerService.postMessage('message', {
+        action: 'previewData',
+        data: this.displayedDataSource,
+        titleName,
+      });
+    } catch (error) {
+      this.dialog.open(ErrorDialogComponent, {
+        data: {
+          message: `Failed to preview specs from the title: ${titleName}`,
+        },
+      });
+    }
   }
 }
