@@ -62,7 +62,6 @@ export class XlsxProcessingService {
           } else if (data.action === 'switchSheet') {
             this.handleSwitchSheetAction(data);
           } else if (data.action === 'previewData') {
-            console.log(data, ' from processXlsxData: previewData');
             this.handlePreviewDataAction(data);
           } else if (data.action === 'extractSpecs') {
             this.handleExtractSpecsAction(data);
@@ -91,7 +90,6 @@ export class XlsxProcessingService {
   }
 
   handlePreviewDataAction(data: any) {
-    console.log(data, ' from handlePreviewDataAction in the service');
     const events = this.processSpecs(data.jsonData);
     this.displayedDataSource$.next(
       events.map((event: any) => {
@@ -109,7 +107,6 @@ export class XlsxProcessingService {
 
   processSpecs(data: DataRow[]): any[] {
     const gtmSpecs = filterGtmSpecsFromData(data);
-    console.log(gtmSpecs, ' gtmSpecs from processSpecs');
     const cleanedGtmSpecs = gtmSpecs.map((spec) => {
       try {
         return convertSpecStringToObject(spec);
@@ -126,7 +123,6 @@ export class XlsxProcessingService {
 
   processAndSetSpecsContent(data: DataRow[]): void {
     const events = this.processSpecs(data);
-    console.log(events, ' from processAndSetSpecsContent');
     this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
   }
 

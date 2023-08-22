@@ -101,7 +101,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
       .on('toggleDrawer')
       .pipe(
         tap((file) => {
-          console.log(file, ' from initEventBusListeners');
           this.toggleSidenav();
           this.xlsxProcessing.loadXlsxFile(file);
         })
@@ -112,27 +111,26 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   // Event bus post messages
 
   switchToSelectedSheet(event: any) {
-    const sheetName = event.target.value;
+    const name = event.target.value;
     this.workbook$
       .pipe(
         take(1),
-        tap((workbook) =>
-          this.postDataToWorker('switchSheet', workbook, sheetName)
-        )
+        filter((workbook) => !!workbook), // Ensure that workbook exists
+        tap((workbook) => this.postDataToWorker('switchSheet', workbook, name))
       )
       .subscribe();
   }
 
   retrieveSpecsFromSource() {
-    const titleName = this.form.get('dataColumnName')?.value as string;
+    const name = this.form.get('dataColumnName')?.value as string;
 
     this.dataSource$
       .pipe(
         take(1),
         filter((data) => !!data), // Ensure that data exists
-        tap((data) => this.postDataToWorker('extractSpecs', data, titleName)),
+        tap((data) => this.postDataToWorker('extractSpecs', data, name)),
         catchError(() => {
-          this.handlePostError(titleName);
+          this.handlePostError(name);
           return EMPTY; // `EMPTY` is an observable that completes immediately without emitting any value.
         })
       )
@@ -140,15 +138,15 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   }
 
   previewData() {
-    const titleName = this.form.get('dataColumnName')?.value as string;
+    const name = this.form.get('dataColumnName')?.value as string;
 
     this.displayedDataSource$
       .pipe(
         take(1),
         filter((data) => !!data), // Ensure that data exists
-        tap((data) => this.postDataToWorker('previewData', data, titleName)),
+        tap((data) => this.postDataToWorker('previewData', data, name)),
         catchError(() => {
-          this.handlePostError(titleName);
+          this.handlePostError(name);
           return EMPTY;
         })
       )
@@ -157,11 +155,11 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   // Private utilities
 
-  private postDataToWorker(action: string, data: any, titleName: string) {
+  private postDataToWorker(action: string, data: any, name: string) {
     this.webWorkerService.postMessage('message', {
       action,
       data,
-      titleName,
+      name,
     });
   }
 
