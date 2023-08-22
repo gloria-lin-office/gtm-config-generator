@@ -3,7 +3,7 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { EventBusService } from '../../../services/event-bus/event-bus.service';
-import { BehaviorSubject, tap } from 'rxjs';
+import { EMPTY, Observable, catchError, filter, take, tap } from 'rxjs';
 import { ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -19,16 +19,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { WebWorkerService } from '../../../services/web-worker/web-worker.service';
-import { EditorService } from '../../services/editor/editor.service';
-import {
-  convertSpecStringToObject,
-  filterGtmSpecsFromData,
-  filterNonEmptyData,
-} from './xlsx-helper';
-import { DataRow } from '../../../interfaces/gtm-cofig-generator';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { setInitialScrollTop } from './dom-helper';
+import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -54,65 +48,36 @@ import { setInitialScrollTop } from './dom-helper';
 export class XlsxSidenavFormComponent implements AfterViewInit {
   @ViewChild('sidenav') sidenav: MatSidenav | undefined;
   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
+
+  fileName$ = this.xlsxProcessing.fileName$ as Observable<string>;
+  worksheetNames$ = this.xlsxProcessing.worksheetNames$ as Observable<string[]>;
+  workbook$ = this.xlsxProcessing.workbook$ as Observable<any>;
+  dataSource$ = this.xlsxProcessing.dataSource$ as Observable<any[]>;
+  displayedDataSource$ = this.xlsxProcessing.displayedDataSource$ as Observable<
+    any[]
+  >;
+  displayedColumns$ = this.xlsxProcessing.displayedColumns$ as Observable<
+    string[]
+  >;
+
   file: File | undefined;
-  dataSource: any[] = [
-    {
-      Name: 'Bill Clinton',
-      Index: 42,
-    },
-    {
-      Name: 'GeorgeW Bush',
-      Index: 43,
-    },
-    {
-      Name: 'Barack Obama',
-      Index: 44,
-    },
-    {
-      Name: 'Donald Trump',
-      Index: 45,
-    },
-    {
-      Name: 'Joseph Biden',
-      Index: 46,
-    },
-  ];
-  displayedDataSource: any[] = [];
-  displayedColumns: string[] = Object.keys(this.dataSource[0]);
-
-  fileName$ = new BehaviorSubject<string>('');
-  worksheetNames$ = new BehaviorSubject<string[]>(['']);
-  workbook$ = new BehaviorSubject<any>(null);
-
   dataColumnNameString = 'dataLayer specs';
-  isPreviewing = true;
-  isRenderingJson = false;
 
   form = this.fb.group({
     worksheetNames: [''],
     dataColumnName: [this.dataColumnNameString, Validators.required],
   });
 
-  scrollHeight$ = new BehaviorSubject<number>(0);
-
   constructor(
     private eventBusService: EventBusService,
     private fb: FormBuilder,
     private webWorkerService: WebWorkerService,
-    private editorService: EditorService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public xlsxProcessing: XlsxProcessingService
   ) {}
 
   ngAfterViewInit() {
-    this.eventBusService
-      .on('toggleDrawer')
-      .pipe(
-        tap((file) => {
-          this.toggleSidenav();
-          this.loadXlsxFile(file);
-        })
-      )
-      .subscribe();
+    this.initEventBusListeners();
     setInitialScrollTop(this.scrollContainer);
   }
 
@@ -129,128 +94,82 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
     }
   }
 
-  loadXlsxFile(file: File) {
-    const fileName = file.name;
-    this.fileName$.next(fileName);
-    const reader = new FileReader();
+  // Event bus listeners
 
-    reader.onload = (e: any) => {
-      this.webWorkerService.postMessage('message', {
-        action: 'readXlsx',
-        data: e.target.result,
-      });
-      this.processXlsxData();
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  processXlsxData() {
-    this.webWorkerService
-      .onMessage()
+  private initEventBusListeners() {
+    this.eventBusService
+      .on('toggleDrawer')
       .pipe(
-        tap((data) => {
-          if (data.action === 'readXlsx') {
-            this.workbook$.next(data.workbook);
-            this.worksheetNames$.next(data.sheetNames);
-            this.dataSource = data.jsonData;
-            this.displayedDataSource = filterNonEmptyData(this.dataSource);
-            this.displayedColumns = Object.keys(this.displayedDataSource[0]);
-          } else if (data.action === 'switchSheet') {
-            this.displayedDataSource = filterNonEmptyData(data.jsonData);
-            this.displayedColumns = Object.keys(this.displayedDataSource[0]);
-            this.dataSource = data.jsonData;
-          } else if (data.action === 'previewData') {
-            console.log(data.jsonData, ' from previewData');
-            const events = this.processSpecs(data.jsonData);
-            const eventsData = events.map((event) => {
-              return {
-                spec: JSON.parse(JSON.stringify(event, null, 2)),
-              };
-            });
-            this.isRenderingJson = true;
-            this.displayedDataSource = eventsData;
-            this.displayedColumns = ['spec'];
-          } else if (data.action === 'extractSpecs') {
-            this.processAndSetSpecsContent(data.jsonData);
-          }
+        tap((file) => {
+          console.log(file, ' from initEventBusListeners');
+          this.toggleSidenav();
+          this.xlsxProcessing.loadXlsxFile(file);
         })
       )
       .subscribe();
   }
+
+  // Event bus post messages
 
   switchToSelectedSheet(event: any) {
     const sheetName = event.target.value;
     this.workbook$
       .pipe(
-        tap((workbook) => {
-          this.webWorkerService.postMessage('message', {
-            action: 'switchSheet',
-            workbook,
-            sheetName,
-          });
-        })
+        take(1),
+        tap((workbook) =>
+          this.postDataToWorker('switchSheet', workbook, sheetName)
+        )
       )
       .subscribe();
   }
 
   retrieveSpecsFromSource() {
-    let titleName;
-    try {
-      titleName = this.form.get('dataColumnName')?.value;
-      console.log('data source: ', this.dataSource);
-      this.webWorkerService.postMessage('message', {
-        action: 'extractSpecs',
-        data: this.dataSource,
-        titleName,
-      });
-    } catch (error) {
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          message: `Failed to extract specs from the title: ${titleName}`,
-        },
-      });
-    }
-  }
+    const titleName = this.form.get('dataColumnName')?.value as string;
 
-  processSpecs(data: DataRow[]) {
-    const gtmSpecs = filterGtmSpecsFromData(data);
-    console.log(gtmSpecs, ' gtmSpecs from processSpecs');
-    const cleanedGtmSpecs = gtmSpecs.map((spec) => {
-      try {
-        return convertSpecStringToObject(spec);
-      } catch (error) {
-        this.dialog.open(ErrorDialogComponent, {
-          data: {
-            message: `Failed to parse the following spec: ${spec}`,
-          },
-        });
-      }
-    });
-    return cleanedGtmSpecs.filter((spec) => spec && spec.event);
-  }
-
-  processAndSetSpecsContent(data: DataRow[]) {
-    const events = this.processSpecs(data);
-    console.log(events, ' from processAndSetSpecsContent');
-    this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
+    this.dataSource$
+      .pipe(
+        take(1),
+        filter((data) => !!data), // Ensure that data exists
+        tap((data) => this.postDataToWorker('extractSpecs', data, titleName)),
+        catchError(() => {
+          this.handlePostError(titleName);
+          return EMPTY; // `EMPTY` is an observable that completes immediately without emitting any value.
+        })
+      )
+      .subscribe();
   }
 
   previewData() {
-    let titleName;
-    try {
-      titleName = this.form.get('dataColumnName')?.value;
-      this.webWorkerService.postMessage('message', {
-        action: 'previewData',
-        data: this.displayedDataSource,
-        titleName,
-      });
-    } catch (error) {
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          message: `Failed to preview specs from the title: ${titleName}`,
-        },
-      });
-    }
+    const titleName = this.form.get('dataColumnName')?.value as string;
+
+    this.displayedDataSource$
+      .pipe(
+        take(1),
+        filter((data) => !!data), // Ensure that data exists
+        tap((data) => this.postDataToWorker('previewData', data, titleName)),
+        catchError(() => {
+          this.handlePostError(titleName);
+          return EMPTY;
+        })
+      )
+      .subscribe();
+  }
+
+  // Private utilities
+
+  private postDataToWorker(action: string, data: any, titleName: string) {
+    this.webWorkerService.postMessage('message', {
+      action,
+      data,
+      titleName,
+    });
+  }
+
+  private handlePostError(titleName: string) {
+    this.dialog.open(ErrorDialogComponent, {
+      data: {
+        message: `Failed to extract specs from the title: ${titleName}`,
+      },
+    });
   }
 }
