@@ -9,6 +9,7 @@ import { MainPageComponent } from './main-page/main-page.component';
 
 import { ProjectRetrieverService } from './services/project-retriever/project-retriever.service';
 import { WebWorkerService } from './services/web-worker/web-worker.service';
+import { MatDialogModule } from '@angular/material/dialog'; // for lazy loading module to work, this import must be here
 
 @NgModule({
   declarations: [AppComponent],
@@ -18,6 +19,7 @@ import { WebWorkerService } from './services/web-worker/web-worker.service';
     BrowserAnimationsModule,
     HttpClientModule,
     MainPageComponent,
+    MatDialogModule,
   ],
   providers: [ProjectRetrieverService, WebWorkerService],
   bootstrap: [AppComponent],

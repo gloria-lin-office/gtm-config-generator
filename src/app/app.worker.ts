@@ -21,20 +21,20 @@ addEventListener('message', (event) => {
       break;
     }
     case 'switchSheet': {
-      const { workbook, sheetName } = event.data;
-      let jsonData = getSheetData(workbook, sheetName);
+      const { data, name } = event.data;
+      let jsonData = getSheetData(data, name);
       postMessage({ action: `${action}`, jsonData });
       break;
     }
     case 'extractSpecs': {
-      const { data, titleName } = event.data;
-      const jsonData = extractSpecs(data, titleName);
+      const { data, name } = event.data;
+      const jsonData = extractSpecs(data, name);
       postMessage({ action: `${action}`, jsonData });
       break;
     }
     case 'previewData': {
-      const { data, titleName } = event.data;
-      const jsonData = extractSpecs(data, titleName);
+      const { data, name } = event.data;
+      const jsonData = extractSpecs(data, name);
       postMessage({ action: `${action}`, jsonData });
       break;
     }
