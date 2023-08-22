@@ -18,7 +18,7 @@ export function filterGtmSpecsFromData(data: DataRow[]) {
 
 export function convertSpecStringToObject(spec: DataRow): any {
   const inputString = Object.values(spec)[0];
-
+  // console.log('inputString', inputString);
   // Extract content within window.dataLayer.push()
   const matched = inputString.match(/window\.dataLayer\.push\(([^)]+)\)/);
 

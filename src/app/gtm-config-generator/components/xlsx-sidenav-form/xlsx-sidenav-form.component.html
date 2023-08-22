@@ -12,18 +12,43 @@
   >
     <div class="xlsx-sidenav-form__header">
       <div class="xlsx-sidenav-form__header__title">
-        <mat-icon (click)="sidenav.toggle()">highlight_off</mat-icon>
+        <mat-icon
+          (click)="
+            sidenav.toggle();
+            xlsxProcessing.setIsPreviewing(false);
+            xlsxProcessing.setIsRenderingJson(false)
+          "
+          >highlight_off</mat-icon
+        >
         <div>
           <u>{{ fileName$ | async }}</u>
         </div>
       </div>
       <div>
         <button
+          *ngIf="!(xlsxProcessing.getIsPreviewing() | async)"
           mat-raised-button
-          (click)="sidenav.toggle(); retrieveSpecsFromSource()"
+          (click)="
+            sidenav.toggle();
+            retrieveSpecsFromSource();
+            xlsxProcessing.setIsPreviewing(true);
+            xlsxProcessing.setIsRenderingJson(false)
+          "
           color="primary"
         >
           Save
+        </button>
+        <button
+          *ngIf="xlsxProcessing.getIsPreviewing() | async"
+          mat-raised-button
+          (click)="
+            previewData();
+            xlsxProcessing.setIsPreviewing(false);
+            xlsxProcessing.setIsRenderingJson(true)
+          "
+          color="warn"
+        >
+          Preview
         </button>
       </div>
     </div>
@@ -71,25 +96,42 @@
             id="scrollContainer"
             style="overflow: scroll; transform: rotateX(180deg); height: 70vh"
           >
-            <table
-              mat-table
-              [dataSource]="displayedDataSource"
-              style="transform: rotateX(180deg)"
-            >
-              <ng-container
-                matColumnDef="{{ column }}"
-                *ngFor="let column of displayedColumns"
+            <ng-container *ngIf="displayedDataSource$ | async as dataSource">
+              <table
+                mat-table
+                [dataSource]="dataSource"
+                style="transform: rotateX(180deg)"
               >
-                <th mat-header-cell *matHeaderCellDef>
-                  {{ column.replace("__EMPTY", "empty_title") }}
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element[column] }}
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            </table>
+                <ng-container
+                  matColumnDef="{{ column }}"
+                  *ngFor="let column of displayedColumns$ | async"
+                >
+                  <th mat-header-cell *matHeaderCellDef>
+                    {{ column.replace("__EMPTY", "empty_title") }}
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    <pre
+                      *ngIf="xlsxProcessing.getIsRenderingJson() | async"
+                      style="padding: 5px 0"
+                      >{{ element[column] | json }} </pre
+                    >
+                    <div *ngIf="!(xlsxProcessing.getIsRenderingJson() | async)">
+                      {{ element[column] }}
+                    </div>
+                  </td>
+                  ></ng-container
+                >
+
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="displayedColumns$ | async"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayedColumns$ | async"
+                ></tr>
+              </table>
+            </ng-container>
           </mat-card-content>
         </div>
       </mat-card>

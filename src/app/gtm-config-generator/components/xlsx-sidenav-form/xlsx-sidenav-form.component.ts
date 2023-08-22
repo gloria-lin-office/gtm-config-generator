@@ -1,15 +1,9 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Renderer2,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { EventBusService } from '../../../services/event-bus/event-bus.service';
-import { BehaviorSubject, Subscription, filter, tap } from 'rxjs';
+import { EMPTY, Observable, catchError, filter, take, tap } from 'rxjs';
 import { ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -25,15 +19,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { WebWorkerService } from '../../../services/web-worker/web-worker.service';
-import { EditorService } from '../../services/editor/editor.service';
-import {
-  convertSpecStringToObject,
-  filterGtmSpecsFromData,
-  filterNonEmptyData,
-} from './xlsx-helper';
-import { DataRow } from '../../../interfaces/gtm-cofig-generator';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { setInitialScrollTop } from './dom-helper';
+import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -59,64 +48,37 @@ import { MatDialog } from '@angular/material/dialog';
 export class XlsxSidenavFormComponent implements AfterViewInit {
   @ViewChild('sidenav') sidenav: MatSidenav | undefined;
   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
+
+  fileName$ = this.xlsxProcessing.fileName$ as Observable<string>;
+  worksheetNames$ = this.xlsxProcessing.worksheetNames$ as Observable<string[]>;
+  workbook$ = this.xlsxProcessing.workbook$ as Observable<any>;
+  dataSource$ = this.xlsxProcessing.dataSource$ as Observable<any[]>;
+  displayedDataSource$ = this.xlsxProcessing.displayedDataSource$ as Observable<
+    any[]
+  >;
+  displayedColumns$ = this.xlsxProcessing.displayedColumns$ as Observable<
+    string[]
+  >;
+
   file: File | undefined;
-  dataSource: any[] = [
-    {
-      Name: 'Bill Clinton',
-      Index: 42,
-    },
-    {
-      Name: 'GeorgeW Bush',
-      Index: 43,
-    },
-    {
-      Name: 'Barack Obama',
-      Index: 44,
-    },
-    {
-      Name: 'Donald Trump',
-      Index: 45,
-    },
-    {
-      Name: 'Joseph Biden',
-      Index: 46,
-    },
-  ];
-  displayedDataSource: any[] = [];
-  displayedColumns: string[] = Object.keys(this.dataSource[0]);
-
-  fileName$ = new BehaviorSubject<string>('');
-  worksheetNames$ = new BehaviorSubject<string[]>(['']);
-  workbook$ = new BehaviorSubject<any>(null);
-
   dataColumnNameString = 'dataLayer specs';
 
   form = this.fb.group({
     worksheetNames: [''],
-    dataColumnName: ['', Validators.required],
+    dataColumnName: [this.dataColumnNameString, Validators.required],
   });
-
-  scrollHeight$ = new BehaviorSubject<number>(0);
 
   constructor(
     private eventBusService: EventBusService,
     private fb: FormBuilder,
     private webWorkerService: WebWorkerService,
-    private editorService: EditorService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public xlsxProcessing: XlsxProcessingService
   ) {}
 
   ngAfterViewInit() {
-    this.eventBusService
-      .on('toggleDrawer')
-      .pipe(
-        tap((file) => {
-          this.toggleSidenav();
-          this.loadXlsxFile(file);
-        })
-      )
-      .subscribe();
-    this.setInitialScrollTop();
+    this.initEventBusListeners();
+    setInitialScrollTop(this.scrollContainer);
   }
 
   toggleSidenav() {
@@ -132,108 +94,80 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
     }
   }
 
-  loadXlsxFile(file: File) {
-    const fileName = file.name;
-    this.fileName$.next(fileName);
-    const reader = new FileReader();
+  // Event bus listeners
 
-    reader.onload = (e: any) => {
-      this.webWorkerService.postMessage('message', {
-        action: 'readXlsx',
-        data: e.target.result,
-      });
-      this.processXlsxData();
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  processXlsxData() {
-    this.webWorkerService
-      .onMessage()
+  private initEventBusListeners() {
+    this.eventBusService
+      .on('toggleDrawer')
       .pipe(
-        tap((data) => {
-          if (data.action === 'readXlsx') {
-            this.workbook$.next(data.workbook);
-            this.worksheetNames$.next(data.sheetNames);
-            this.dataSource = data.jsonData;
-            this.displayedDataSource = filterNonEmptyData(this.dataSource);
-            this.displayedColumns = Object.keys(this.displayedDataSource[0]);
-          } else if (data.action === 'switchSheet') {
-            this.displayedDataSource = filterNonEmptyData(data.jsonData);
-            this.displayedColumns = Object.keys(this.displayedDataSource[0]);
-          } else if (data.action === 'extractSpecs') {
-            this.processAndSetSpecsContent(data.jsonData);
-          }
+        tap((file) => {
+          this.toggleSidenav();
+          this.xlsxProcessing.loadXlsxFile(file);
         })
       )
       .subscribe();
   }
 
+  // Event bus post messages
+
   switchToSelectedSheet(event: any) {
-    const sheetName = event.target.value;
+    const name = event.target.value;
     this.workbook$
       .pipe(
-        tap((workbook) => {
-          this.webWorkerService.postMessage('message', {
-            action: 'switchSheet',
-            workbook,
-            sheetName,
-          });
-        })
+        take(1),
+        filter((workbook) => !!workbook), // Ensure that workbook exists
+        tap((workbook) => this.postDataToWorker('switchSheet', workbook, name))
       )
       .subscribe();
   }
 
   retrieveSpecsFromSource() {
-    let titleName;
-    try {
-      titleName = this.form.get('dataColumnName')?.value;
-      this.webWorkerService.postMessage('message', {
-        action: 'extractSpecs',
-        data: this.dataSource,
-        titleName,
-      });
-    } catch (error) {
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          message: `Failed to extract specs from the title: ${titleName}`,
-        },
-      });
-    }
+    const name = this.form.get('dataColumnName')?.value as string;
+
+    this.dataSource$
+      .pipe(
+        take(1),
+        filter((data) => !!data), // Ensure that data exists
+        tap((data) => this.postDataToWorker('extractSpecs', data, name)),
+        catchError(() => {
+          this.handlePostError(name);
+          return EMPTY; // `EMPTY` is an observable that completes immediately without emitting any value.
+        })
+      )
+      .subscribe();
   }
 
-  processAndSetSpecsContent(data: DataRow[]) {
-    const gtmSpecs = filterGtmSpecsFromData(data);
-    const cleanedGtmSpecs = gtmSpecs.map((spec) => {
-      try {
-        return convertSpecStringToObject(spec);
-      } catch (error) {
-        this.dialog.open(ErrorDialogComponent, {
-          data: {
-            message: `Failed to parse the following spec: ${spec}`,
-          },
-        });
-      }
-    });
-    const events = cleanedGtmSpecs.filter((spec) => spec && spec.event);
-    this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
+  previewData() {
+    const name = this.form.get('dataColumnName')?.value as string;
+
+    this.displayedDataSource$
+      .pipe(
+        take(1),
+        filter((data) => !!data), // Ensure that data exists
+        tap((data) => this.postDataToWorker('previewData', data, name)),
+        catchError(() => {
+          this.handlePostError(name);
+          return EMPTY;
+        })
+      )
+      .subscribe();
   }
 
-  setInitialScrollTop() {
-    const observer = new MutationObserver(() => {
-      const element = this.scrollContainer.nativeElement;
-      if (element.scrollHeight > 0) {
-        element.scrollTop = element.scrollHeight;
-        observer.disconnect(); // Disconnect after setting scrollTop
-      }
-    });
+  // Private utilities
 
-    observer.observe(this.scrollContainer.nativeElement, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false,
+  private postDataToWorker(action: string, data: any, name: string) {
+    this.webWorkerService.postMessage('message', {
+      action,
+      data,
+      name,
+    });
+  }
+
+  private handlePostError(titleName: string) {
+    this.dialog.open(ErrorDialogComponent, {
+      data: {
+        message: `Failed to extract specs from the title: ${titleName}`,
+      },
     });
   }
 }
