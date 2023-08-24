@@ -57,33 +57,46 @@ function getSheetData(workbook: any, sheetName: string): string[] {
 }
 
 function extractSpecs(data: DataRow[], specTitle: string): DataRow[] {
-  // 1. Find the column index
   let columnIndex: number | null = null;
 
   for (const row of data) {
+    const foundIndexKey = Object.keys(row).findIndex(
+      (key) => key === specTitle
+    );
     const foundIndex = Object.values(row).findIndex(
       (value) => value === specTitle
     );
+
+    if (foundIndexKey !== -1) {
+      return extractSpecsByColumnIndex(data, foundIndexKey);
+    }
+
     if (foundIndex !== -1) {
       columnIndex = foundIndex;
-      break; // exit the loop once the column is found
+      break;
     }
   }
 
   if (columnIndex === null) {
-    return []; // if column not found, return an empty array
+    return [];
   }
 
-  // 2. Extract values from the identified column
+  return extractSpecsByColumnIndex(data, columnIndex);
+}
+
+function extractSpecsByColumnIndex(
+  data: DataRow[],
+  columnIndex: number
+): DataRow[] {
   const specs: DataRow[] = [];
 
   for (const row of data) {
     const key = Object.keys(row)[columnIndex];
     const value = row[key];
     if (value) {
-      // to ensure only rows with values are considered
       specs.push({ [key]: value });
     }
   }
+
   return specs;
 }
