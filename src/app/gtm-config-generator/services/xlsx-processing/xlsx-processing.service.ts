@@ -141,4 +141,15 @@ export class XlsxProcessingService {
   setIsPreviewing(isPreviewing: boolean) {
     this.isPreviewing$.next(isPreviewing);
   }
+
+  resetAllData() {
+    this.workbook$.next(null);
+    this.worksheetNames$.next(['']);
+    this.fileName$.next('');
+    this.dataSource$.next([]);
+    this.displayedDataSource$.next([]);
+    this.displayedColumns$.next([]);
+    this.isRenderingJson$.next(false);
+    this.isPreviewing$.next(true);
+  }
 }
