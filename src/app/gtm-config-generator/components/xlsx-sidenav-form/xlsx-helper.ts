@@ -18,11 +18,16 @@ export function filterGtmSpecsFromData(data: DataRow[]) {
 
 export function convertSpecStringToObject(spec: DataRow): any {
   const inputString = Object.values(spec)[0];
-  // console.log('inputString', inputString);
-  // Extract content within window.dataLayer.push()
-  const matched = inputString.match(/window\.dataLayer\.push\(([^)]+)\)/);
+  // Match all occurrences of window.dataLayer.push(...)
+  const matches = [
+    ...inputString.matchAll(/window\.dataLayer\.push\(([^)]+)\)/g),
+  ];
 
-  let jsonString = matched && matched[1] ? matched[1] : inputString;
+  // Check if the match has the string 'event: "view_item_list"'
+  const desiredMatch = matches.find((match) => match[1].includes('event'));
+
+  let jsonString =
+    desiredMatch && desiredMatch[1] ? desiredMatch[1] : inputString;
 
   // Try parsing the JSON string directly
   try {

@@ -148,10 +148,13 @@ export function fixJsonString(inputString: string) {
       '$1"$2"$3'
     );
 
-    // Fix unquoted or partially-quoted key/value pairs
+    // Fix unquoted values (except true, false, and null) by wrapping them with quotes
     fixedString = fixedString.replace(
-      /([{,]\s*)"?\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*"?(\s*:\s*)"?\s*([^,"{}\[\]\s]+)\s*"?(\s*[,}\]])/g,
-      '$1"$2"$3"$4"$5'
+      /(:\s*)([^"{}\[\],\s]+)(?=\s*[,\]}])/g,
+      (match, p1, p2) => {
+        if (['true', 'false', 'null'].includes(p2)) return match;
+        return `${p1}"${p2}"`;
+      }
     );
 
     // Remove any trailing commas
