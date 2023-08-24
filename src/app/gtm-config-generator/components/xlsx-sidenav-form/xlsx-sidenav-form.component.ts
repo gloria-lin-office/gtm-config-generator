@@ -62,7 +62,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   file: File | undefined;
   dataColumnNameString = 'dataLayer specs';
-
   form = this.fb.group({
     worksheetNames: [''],
     dataColumnName: [this.dataColumnNameString, Validators.required],
@@ -78,7 +77,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.initEventBusListeners();
-    setInitialScrollTop(this.scrollContainer);
   }
 
   toggleSidenav() {
@@ -88,6 +86,7 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
     // Check if sidenav is opened or closed and adjust body overflow accordingly.
     if (this.sidenav.opened) {
+      setInitialScrollTop(this.scrollContainer);
       document.body.style.overflow = 'hidden'; // This will disable scrolling.
     } else {
       document.body.style.overflow = 'auto'; // This will enable scrolling back.
@@ -123,7 +122,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   retrieveSpecsFromSource() {
     const name = this.form.get('dataColumnName')?.value as string;
-
     this.dataSource$
       .pipe(
         take(1),
@@ -151,6 +149,10 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
         })
       )
       .subscribe();
+  }
+
+  resetAllData() {
+    this.xlsxProcessing.resetAllData();
   }
 
   // Private utilities

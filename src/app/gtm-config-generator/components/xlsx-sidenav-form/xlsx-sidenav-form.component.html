@@ -15,8 +15,9 @@
         <mat-icon
           (click)="
             sidenav.toggle();
-            xlsxProcessing.setIsPreviewing(false);
-            xlsxProcessing.setIsRenderingJson(false)
+            xlsxProcessing.setIsPreviewing(true);
+            xlsxProcessing.setIsRenderingJson(false);
+            resetAllData()
           "
           >highlight_off</mat-icon
         >
@@ -32,7 +33,8 @@
             sidenav.toggle();
             retrieveSpecsFromSource();
             xlsxProcessing.setIsPreviewing(true);
-            xlsxProcessing.setIsRenderingJson(false)
+            xlsxProcessing.setIsRenderingJson(false);
+            resetAllData()
           "
           color="primary"
         >
@@ -71,6 +73,7 @@
                 formControlName="worksheetNames"
                 (change)="switchToSelectedSheet($event)"
               >
+                <!-- TODO: how to keep it after resetting the form? -->
                 <option *ngFor="let worksheetName of worksheetNames$ | async">
                   {{ worksheetName }}
                 </option>
