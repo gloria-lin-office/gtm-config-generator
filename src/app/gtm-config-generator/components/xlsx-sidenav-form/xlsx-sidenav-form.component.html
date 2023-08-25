@@ -54,90 +54,99 @@
         </button>
       </div>
     </div>
-    <mat-sidenav-content class="xlsx-sidenav-form__sidenav__content">
-      <mat-card
-        class="mat-elevation-z8 xlsx-sidenav-form__sidenav__content__card"
-      >
-        <mat-card-content>
-          <form [formGroup]="form" class="xlsx-sidenav-form__form">
-            <div class="xlsx-sidenav-form__form__field">
-              <div class="xlsx-sidenav-form__form__field__header">
-                <label>Worksheet Name</label>
-                <mat-icon
-                  matSuffix
-                  matTooltip="Select the worksheet that contains the data"
-                  >help_outline</mat-icon
+    <mat-progress-spinner
+      *ngIf="loading; else content"
+      mode="indeterminate"
+      class="xlsx-sidenav-form__spinner"
+    ></mat-progress-spinner>
+    <ng-template #content>
+      <mat-sidenav-content class="xlsx-sidenav-form__sidenav__content">
+        <mat-card
+          class="mat-elevation-z8 xlsx-sidenav-form__sidenav__content__card"
+        >
+          <mat-card-content>
+            <form [formGroup]="form" class="xlsx-sidenav-form__form">
+              <div class="xlsx-sidenav-form__form__field">
+                <div class="xlsx-sidenav-form__form__field__header">
+                  <label>Worksheet Name</label>
+                  <mat-icon
+                    matSuffix
+                    matTooltip="Select the worksheet that contains the data"
+                    >help_outline</mat-icon
+                  >
+                </div>
+                <select
+                  formControlName="worksheetNames"
+                  (change)="switchToSelectedSheet($event)"
                 >
+                  <option *ngFor="let worksheetName of worksheetNames$ | async">
+                    {{ worksheetName }}
+                  </option>
+                </select>
               </div>
-              <select
-                formControlName="worksheetNames"
-                (change)="switchToSelectedSheet($event)"
-              >
-                <!-- TODO: how to keep it after resetting the form? -->
-                <option *ngFor="let worksheetName of worksheetNames$ | async">
-                  {{ worksheetName }}
-                </option>
-              </select>
-            </div>
-            <div class="xlsx-sidenav-form__form__field">
-              <div class="xlsx-sidenav-form__form__field__header">
-                <label>Data Column Name</label>
-                <mat-icon matSuffix matTooltip="Select the Data Column Name"
-                  >help_outline</mat-icon
-                >
+              <div class="xlsx-sidenav-form__form__field">
+                <div class="xlsx-sidenav-form__form__field__header">
+                  <label>Data Column Name</label>
+                  <mat-icon matSuffix matTooltip="Select the Data Column Name"
+                    >help_outline</mat-icon
+                  >
+                </div>
+                <input type="text" formControlName="dataColumnName" />
               </div>
-              <input type="text" formControlName="dataColumnName" />
-            </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="xlsx-sidenav-form__sidenav__card">
-        <div>
-          <mat-card-content
-            #scrollContainer
-            id="scrollContainer"
-            style="overflow: scroll; transform: rotateX(180deg); height: 70vh"
-          >
-            <ng-container *ngIf="displayedDataSource$ | async as dataSource">
-              <table
-                mat-table
-                [dataSource]="dataSource"
-                style="transform: rotateX(180deg)"
-              >
-                <ng-container
-                  matColumnDef="{{ column }}"
-                  *ngFor="let column of displayedColumns$ | async"
-                >
-                  <th mat-header-cell *matHeaderCellDef>
-                    {{ column.replace("__EMPTY", "empty_title") }}
-                  </th>
-                  <td mat-cell *matCellDef="let element">
-                    <pre
-                      *ngIf="xlsxProcessing.getIsRenderingJson() | async"
-                      style="padding: 5px 0"
-                      >{{ element[column] | json }} </pre
-                    >
-                    <div *ngIf="!(xlsxProcessing.getIsRenderingJson() | async)">
-                      {{ element[column] }}
-                    </div>
-                  </td>
-                  ></ng-container
-                >
-
-                <tr
-                  mat-header-row
-                  *matHeaderRowDef="displayedColumns$ | async"
-                ></tr>
-                <tr
-                  mat-row
-                  *matRowDef="let row; columns: displayedColumns$ | async"
-                ></tr>
-              </table>
-            </ng-container>
+            </form>
           </mat-card-content>
-        </div>
-      </mat-card>
-    </mat-sidenav-content>
+        </mat-card>
+
+        <mat-card class="xlsx-sidenav-form__sidenav__card">
+          <div>
+            <mat-card-content
+              #scrollContainer
+              id="scrollContainer"
+              style="
+                overflow: scroll;
+                min-height: 30vh;
+                height: auto;
+                max-height: 50vh;
+              "
+            >
+              <ng-container *ngIf="displayedDataSource$ | async as dataSource">
+                <table mat-table [dataSource]="dataSource">
+                  <ng-container
+                    matColumnDef="{{ column }}"
+                    *ngFor="let column of displayedColumns$ | async"
+                  >
+                    <th mat-header-cell *matHeaderCellDef>
+                      {{ column.replace("__EMPTY", "empty_title") }}
+                    </th>
+                    <td mat-cell *matCellDef="let element">
+                      <pre
+                        *ngIf="xlsxProcessing.getIsRenderingJson() | async"
+                        style="padding: 5px 0"
+                        >{{ element[column] | json }} </pre
+                      >
+                      <div
+                        *ngIf="!(xlsxProcessing.getIsRenderingJson() | async)"
+                      >
+                        {{ element[column] }}
+                      </div>
+                    </td>
+                    ></ng-container
+                  >
+
+                  <tr
+                    mat-header-row
+                    *matHeaderRowDef="displayedColumns$ | async"
+                  ></tr>
+                  <tr
+                    mat-row
+                    *matRowDef="let row; columns: displayedColumns$ | async"
+                  ></tr>
+                </table>
+              </ng-container>
+            </mat-card-content>
+          </div>
+        </mat-card>
+      </mat-sidenav-content>
+    </ng-template>
   </mat-sidenav>
 </div>
