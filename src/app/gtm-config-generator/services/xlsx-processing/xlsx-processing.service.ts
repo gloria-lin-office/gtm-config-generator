@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, tap } from 'rxjs';
+import { BehaviorSubject, map, take, tap } from 'rxjs';
 import { WebWorkerService } from 'src/app/services/web-worker/web-worker.service';
 import {
   convertSpecStringToObject,
