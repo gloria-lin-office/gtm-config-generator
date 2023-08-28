@@ -79,7 +79,7 @@ export class EditorService {
       editorView.dispatch({
         changes: {
           from: 0,
-          insert: '',
+          insert: '[]',
           to: editorView.state.doc.length,
         },
       });

@@ -26,6 +26,7 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
+import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
 
 @Component({
   selector: 'app-functional-card',
@@ -44,6 +45,7 @@ import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dia
     MeasurementIdTableComponent,
     MatCheckboxModule,
     MatDialogModule,
+    AdvancedExpansionPanelComponent,
   ],
   templateUrl: './functional-card.component.html',
   styleUrls: ['./functional-card.component.scss'],
