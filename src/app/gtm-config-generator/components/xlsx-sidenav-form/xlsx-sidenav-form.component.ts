@@ -3,7 +3,17 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { EventBusService } from '../../../services/event-bus/event-bus.service';
-import { EMPTY, Observable, catchError, filter, take, tap } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  catchError,
+  combineLatest,
+  filter,
+  take,
+  takeWhile,
+  tap,
+  timer,
+} from 'rxjs';
 import { ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -21,8 +31,8 @@ import { MatTableModule } from '@angular/material/table';
 import { WebWorkerService } from '../../../services/web-worker/web-worker.service';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { setInitialScrollTop } from './dom-helper';
 import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -40,6 +50,7 @@ import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-proce
     MatIconModule,
     MatTooltipModule,
     MatTableModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: `./xlsx-sidenav-form.component.html`,
   styleUrls: ['./xlsx-sidenav-form.component.scss'],
@@ -61,8 +72,8 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   >;
 
   file: File | undefined;
+  loading = true;
   dataColumnNameString = 'dataLayer specs';
-
   form = this.fb.group({
     worksheetNames: [''],
     dataColumnName: [this.dataColumnNameString, Validators.required],
@@ -78,7 +89,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.initEventBusListeners();
-    setInitialScrollTop(this.scrollContainer);
   }
 
   toggleSidenav() {
@@ -88,6 +98,7 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
     // Check if sidenav is opened or closed and adjust body overflow accordingly.
     if (this.sidenav.opened) {
+      this.isLoading().subscribe();
       document.body.style.overflow = 'hidden'; // This will disable scrolling.
     } else {
       document.body.style.overflow = 'auto'; // This will enable scrolling back.
@@ -123,7 +134,6 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   retrieveSpecsFromSource() {
     const name = this.form.get('dataColumnName')?.value as string;
-
     this.dataSource$
       .pipe(
         take(1),
@@ -151,6 +161,45 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
         })
       )
       .subscribe();
+  }
+
+  resetAllData() {
+    this.xlsxProcessing.resetAllData();
+  }
+
+  isLoading() {
+    const spinningTime = 1;
+    return combineLatest([
+      timer(0, 500),
+      this.xlsxProcessing.workbook$,
+      this.xlsxProcessing.dataSource$,
+      this.xlsxProcessing.displayedDataSource$,
+      this.xlsxProcessing.displayedColumns$,
+    ]).pipe(
+      takeWhile(([timer]) => timer <= spinningTime),
+      tap(
+        ([
+          timer,
+          workbook,
+          dataSource,
+          displayedDataSource,
+          displayedColumns,
+        ]) => {
+          if (
+            !workbook ||
+            !dataSource ||
+            !displayedDataSource ||
+            !displayedColumns
+          ) {
+            this.loading = true;
+          } else if (timer === spinningTime) {
+            this.loading = false;
+          } else {
+            this.loading = true;
+          }
+        }
+      )
+    );
   }
 
   // Private utilities

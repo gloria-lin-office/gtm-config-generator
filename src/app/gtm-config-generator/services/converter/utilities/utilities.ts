@@ -2,7 +2,11 @@ import {
   NestedObject,
   Parameter,
 } from '../../../../interfaces/gtm-cofig-generator';
-import { BUILT_IN_EVENTS, BUILT_IN_VIDEO_EVENTS } from '../constant';
+import {
+  BUILT_IN_EVENTS,
+  BUILT_IN_SCROLL_EVENT,
+  BUILT_IN_VIDEO_EVENTS,
+} from '../constant';
 
 export function isBuiltInEvent(eventName: string): boolean {
   try {
@@ -14,22 +18,19 @@ export function isBuiltInEvent(eventName: string): boolean {
 
 export function isIncludeVideo(data: Record<string, string>[]) {
   try {
-    // return data.some((record) =>
-    //   BUILT_IN_VIDEO_EVENTS.includes(record['eventName'])
-    // );
-    return true;
+    return data.some((record) =>
+      BUILT_IN_VIDEO_EVENTS.includes(record['eventName'])
+    );
   } catch (error) {
     throw new Error('Failed to check if video is included');
   }
 }
 
 export function isIncludeScroll(data: Record<string, string>[]) {
-  // always include scroll according to the current situation
   try {
-    // return data.some((record) =>
-    //   BUILT_IN_SCROLL_EVENT.includes(record['eventName'])
-    // );
-    return true;
+    return data.some((record) =>
+      BUILT_IN_SCROLL_EVENT.includes(record['eventName'])
+    );
   } catch (error) {
     throw new Error('Failed to check if scroll is included');
   }
@@ -148,10 +149,13 @@ export function fixJsonString(inputString: string) {
       '$1"$2"$3'
     );
 
-    // Fix unquoted or partially-quoted key/value pairs
+    // Fix unquoted values (except true, false, and null) by wrapping them with quotes
     fixedString = fixedString.replace(
-      /([{,]\s*)"?\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*"?(\s*:\s*)"?\s*([^,"{}\[\]\s]+)\s*"?(\s*[,}\]])/g,
-      '$1"$2"$3"$4"$5'
+      /(:\s*)([^"{}\[\],\s]+)(?=\s*[,\]}])/g,
+      (match, p1, p2) => {
+        if (['true', 'false', 'null'].includes(p2)) return match;
+        return `${p1}"${p2}"`;
+      }
     );
 
     // Remove any trailing commas

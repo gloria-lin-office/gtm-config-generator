@@ -30,19 +30,6 @@ import { Component } from '@angular/core';
         the value.
       </p>
     </div>
-    <h1>Automatically Included Tags</h1>
-    <div class="article__default-setting">
-      <p>
-        In an effort to further streamline your Google Tag Manager
-        configuration, our GTM Configuration JSON Generator automatically
-        includes 'Video' and 'Scroll' tags in the output. This means you won't
-        need to manually set these commonly used tags, saving you valuable time
-        and ensuring consistent tracking across your digital properties. Now,
-        tracking user interaction with videos and scroll activities on your
-        website becomes even more effortless! Rest assured, our tool is designed
-        to make your tag management as efficient and effective as possible.
-      </p>
-    </div>
   </div> `,
   styles: [],
   imports: [CommonModule],
