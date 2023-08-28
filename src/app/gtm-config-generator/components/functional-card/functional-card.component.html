@@ -45,20 +45,5 @@
       <mat-icon matSuffix matTooltip="e.g., GTM-WJ6N3XX">help_outline</mat-icon>
     </mat-form-field>
   </div>
-  <button
-    #trigger="cdkOverlayOrigin"
-    cdkOverlayOrigin
-    mat-raised-button
-    (click)="setMeasurementId()"
-    class="functional-card__measurement"
-    [color]="isSettingMeasurementId ? 'success' : ''"
-  >
-    Set Measurement ID (Optional)
-  </button>
-  <app-measurement-id-table
-    [isOpen]="isOpen"
-    [trigger]="trigger"
-    (closeEvent)="closeLoginInterface()"
-    (formData)="handleMeasurementIdSettingFormData($event)"
-  />
+  <app-advanced-expansion-panel></app-advanced-expansion-panel>
 </div>
