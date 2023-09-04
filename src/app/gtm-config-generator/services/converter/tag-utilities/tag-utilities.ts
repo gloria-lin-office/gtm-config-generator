@@ -47,6 +47,7 @@ export function createTag(
   dataLayers: string[],
   triggers: TriggerConfig[]
 ): TagConfig {
+  console.log('dataLayers: ', dataLayers);
   return {
     name: `GA4 event - ${tag.name}`,
     type: 'gaawe',
@@ -67,7 +68,7 @@ export function createTag(
         type: 'LIST',
         key: 'eventParameters',
         list: tag.parameters.map((param) => {
-          const dLReference = `DLV - ${param.value}`;
+          const dLReference = `${param.value}`;
           console.log('dLReference: ', dLReference);
           return {
             type: 'MAP',
@@ -80,7 +81,7 @@ export function createTag(
               {
                 type: 'TEMPLATE',
                 key: 'value',
-                value: `{{${dLReference}}}`,
+                value: `{{DLV - ${dLReference}}}`,
               },
             ],
           };
