@@ -67,23 +67,20 @@ export function createTag(
         type: 'LIST',
         key: 'eventParameters',
         list: tag.parameters.map((param) => {
-          const dLReference = param.value;
+          const dLReference = `DLV - ${param.value}`;
+          console.log('dLReference: ', dLReference);
           return {
             type: 'MAP',
             map: [
               {
                 type: 'TEMPLATE',
                 key: 'name',
-                value: param.key,
+                value: `${param.key}`,
               },
               {
                 type: 'TEMPLATE',
                 key: 'value',
-                value:
-                  param.value &&
-                  hasExistedDataLayer(dLReference as string, dataLayers)
-                    ? `{{${dLReference}}}`
-                    : ``,
+                value: `{{${dLReference}}}`,
               },
             ],
           };
