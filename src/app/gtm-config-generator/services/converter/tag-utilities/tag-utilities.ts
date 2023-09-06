@@ -47,7 +47,9 @@ export function createTag(
   dataLayers: string[],
   triggers: TriggerConfig[]
 ): TagConfig {
-  console.log('dataLayers: ', dataLayers);
+  // TODO: the dataLayers are nested paths, such as 'ecommerce.items'
+  // However, the tag.parameters are not nested, such as 'items'
+  // So, I've used the workaround to build it in the utilities.ts, adding the prefix 'ecommerce.'
   return {
     name: `GA4 event - ${tag.name}`,
     type: 'gaawe',
@@ -69,7 +71,6 @@ export function createTag(
         key: 'eventParameters',
         list: tag.parameters.map((param) => {
           const dLReference = `${param.value}`;
-          console.log('dLReference: ', dLReference);
           return {
             type: 'MAP',
             map: [
