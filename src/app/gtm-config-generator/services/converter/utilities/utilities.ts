@@ -118,6 +118,12 @@ export function formatSingleEventParameters(eventParams: string): Parameter[] {
 
   if (parsedEventParams.hasOwnProperty(ecommerceString)) {
     const { ecommerce, ...rest } = parsedEventParams;
+    // TODO: workaround to add the prefix '$ecommerce.' manully to the ecommerce object
+    // Should be checking the dataLayers path for the prefix 'ecommerce.'
+    Object.keys(ecommerce).forEach((key) => {
+      ecommerce[key] = `$ecommerce.${key}`;
+    });
+    console.log('ecommerce: ', ecommerce);
     const ecommerceParams = formatParameters(ecommerce);
     const restParams = formatParameters(rest);
     const formattedParams = [...ecommerceParams, ...restParams];
