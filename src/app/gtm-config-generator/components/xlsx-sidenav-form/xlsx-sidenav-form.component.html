@@ -52,6 +52,7 @@
         >
           Preview
         </button>
+        <!-- TODO: once switched the sheet at the preview stage, reset the ui to let users to do preview again -->
       </div>
     </div>
     <mat-progress-spinner
@@ -61,43 +62,59 @@
     ></mat-progress-spinner>
     <ng-template #content>
       <mat-sidenav-content class="xlsx-sidenav-form__sidenav__content">
-        <mat-card
-          class="mat-elevation-z8 xlsx-sidenav-form__sidenav__content__card"
-        >
-          <mat-card-content>
-            <form [formGroup]="form" class="xlsx-sidenav-form__form">
-              <div class="xlsx-sidenav-form__form__field">
-                <div class="xlsx-sidenav-form__form__field__header">
-                  <label>Worksheet Name</label>
-                  <mat-icon
-                    matSuffix
-                    matTooltip="Select the worksheet that contains the data"
-                    >help_outline</mat-icon
+        <div class="xlsx-sidenav-form__sidenav__content__cards">
+          <mat-card
+            class="mat-elevation-z8 xlsx-sidenav-form__sidenav__content__cards__card"
+          >
+            <mat-card-content>
+              <form [formGroup]="form" class="xlsx-sidenav-form__form">
+                <div class="xlsx-sidenav-form__form__field">
+                  <div class="xlsx-sidenav-form__form__field__header">
+                    <label>Worksheet Name</label>
+                    <mat-icon
+                      matSuffix
+                      matTooltip="Select the worksheet that contains the data"
+                      >help_outline</mat-icon
+                    >
+                  </div>
+                  <select
+                    formControlName="worksheetNames"
+                    (change)="switchToSelectedSheet($event)"
                   >
+                    <option
+                      *ngFor="let worksheetName of worksheetNames$ | async"
+                    >
+                      {{ worksheetName }}
+                    </option>
+                  </select>
                 </div>
-                <select
-                  formControlName="worksheetNames"
-                  (change)="switchToSelectedSheet($event)"
-                >
-                  <option *ngFor="let worksheetName of worksheetNames$ | async">
-                    {{ worksheetName }}
-                  </option>
-                </select>
-              </div>
-              <div class="xlsx-sidenav-form__form__field">
-                <div class="xlsx-sidenav-form__form__field__header">
-                  <label>Data Column Name</label>
-                  <mat-icon matSuffix matTooltip="Select the Data Column Name"
-                    >help_outline</mat-icon
-                  >
+                <div class="xlsx-sidenav-form__form__field">
+                  <div class="xlsx-sidenav-form__form__field__header">
+                    <label>Data Column Name</label>
+                    <mat-icon matSuffix matTooltip="Select the Data Column Name"
+                      >help_outline</mat-icon
+                    >
+                  </div>
+                  <input type="text" formControlName="dataColumnName" />
                 </div>
-                <input type="text" formControlName="dataColumnName" />
-              </div>
-            </form>
-          </mat-card-content>
-        </mat-card>
+              </form>
+            </mat-card-content>
+          </mat-card>
+          <ng-container *ngIf="!(xlsxProcessing.getIsPreviewing() | async)">
+            <mat-card
+              class="mat-elevation-z8 xlsx-sidenav-form__sidenav__content__cards__card"
+            >
+              <mat-card-content>
+                <app-progress-spinner
+                  [numTotalTags]="numTotalTags$ | async"
+                  [numParsedTags]="numParsedTags$ | async"
+                ></app-progress-spinner>
+              </mat-card-content>
+            </mat-card>
+          </ng-container>
+        </div>
 
-        <mat-card class="xlsx-sidenav-form__sidenav__card">
+        <mat-card class="xlsx-sidenav-form__sidenav__cards">
           <div>
             <mat-card-content
               #scrollContainer

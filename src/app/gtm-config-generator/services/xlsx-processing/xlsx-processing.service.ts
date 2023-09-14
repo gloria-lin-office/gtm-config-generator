@@ -1,5 +1,6 @@
+import { unfixedableJsonString } from './../../components/xlsx-sidenav-form/xlsx-helper';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, take, tap } from 'rxjs';
+import { BehaviorSubject, map, tap } from 'rxjs';
 import { WebWorkerService } from 'src/app/services/web-worker/web-worker.service';
 import {
   convertSpecStringToObject,
@@ -91,14 +92,50 @@ export class XlsxProcessingService {
 
   handlePreviewDataAction(data: any) {
     const events = this.processSpecs(data.jsonData);
-    this.displayedDataSource$.next(
-      events.map((event: any) => {
-        return {
-          spec: JSON.parse(JSON.stringify(event, null, 2)),
-        };
+    const parsedFailureEvents = unfixedableJsonString;
+
+    const combinedData = events.map((event: any) => {
+      return {
+        Spec: JSON.parse(JSON.stringify(event, null, 2)),
+        FailureEvent: null, // No failure here
+      };
+    });
+
+    // Include your parsedFailureEvents here
+    combinedData.push({
+      Spec: null, // No spec here
+      FailureEvent: parsedFailureEvents as any,
+    });
+
+    this.displayedDataSource$.next(combinedData);
+    this.displayedColumns$.next(['Spec', 'FailureEvent']);
+
+    console.log(this.displayedDataSource$.getValue());
+
+    if (this.displayedDataSource$.getValue()[0].Spec === null) {
+      this.dialog.open(ErrorDialogComponent, {
+        data: {
+          message: `No events found in the selected colulmn. Please select another sheet and try again.`,
+        },
+      });
+    }
+  }
+
+  getNumTotalEvents() {
+    return this.dataSource$.pipe(
+      map((data) => {
+        return data.length;
       })
     );
-    this.displayedColumns$.next(['spec']);
+  }
+
+  getNumParsedEvents() {
+    return this.displayedDataSource$.pipe(
+      map((data) => {
+        // note the reason for -1 is because the last row is the failure events as an array
+        return data.length - 1;
+      })
+    );
   }
 
   private handleExtractSpecsAction(data: any): any {
