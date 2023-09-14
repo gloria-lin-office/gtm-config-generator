@@ -33,6 +33,7 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ProgressSpinnerComponent } from '../progress-spinner/progress-spinner.component';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -51,6 +52,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatTooltipModule,
     MatTableModule,
     MatProgressSpinnerModule,
+    ProgressSpinnerComponent,
   ],
   templateUrl: `./xlsx-sidenav-form.component.html`,
   styleUrls: ['./xlsx-sidenav-form.component.scss'],
@@ -78,6 +80,9 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
     worksheetNames: [''],
     dataColumnName: [this.dataColumnNameString, Validators.required],
   });
+
+  numTotalTags$ = this.xlsxProcessing.getNumTotalEvents();
+  numParsedTags$ = this.xlsxProcessing.getNumParsedEvents();
 
   constructor(
     private eventBusService: EventBusService,
@@ -127,7 +132,12 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
       .pipe(
         take(1),
         filter((workbook) => !!workbook), // Ensure that workbook exists
-        tap((workbook) => this.postDataToWorker('switchSheet', workbook, name))
+        tap((workbook) => {
+          this.postDataToWorker('switchSheet', workbook, name);
+          // for those who already selected one sheet to preview, but then switch to another sheet
+          this.xlsxProcessing.setIsPreviewing(true);
+          this.xlsxProcessing.setIsRenderingJson(false);
+        })
       )
       .subscribe();
   }

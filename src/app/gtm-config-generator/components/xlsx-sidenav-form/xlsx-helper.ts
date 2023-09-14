@@ -1,5 +1,8 @@
 import { fixJsonString } from '../../services/converter/utilities/utilities';
 import { DataRow } from '../../../interfaces/gtm-cofig-generator';
+
+export const unfixedableJsonString: string[] = [];
+
 export function filterGtmSpecsFromData(data: DataRow[]) {
   return data
     .map((row) => {
@@ -38,6 +41,7 @@ export function convertSpecStringToObject(spec: DataRow): any {
       return JSON.parse(fixJsonString(jsonString));
     } catch (nestedError) {
       console.error('Failed to parse:', jsonString, nestedError);
+      unfixedableJsonString.push(jsonString);
       return null;
     }
   }

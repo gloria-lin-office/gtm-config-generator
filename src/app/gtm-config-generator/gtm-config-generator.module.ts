@@ -13,6 +13,7 @@ import { FileUploadDialogComponent } from './components/file-upload-dialog/file-
 import { XlsxSidenavFormComponent } from './components/xlsx-sidenav-form/xlsx-sidenav-form.component';
 import { EventBusService } from '../services/event-bus/event-bus.service';
 import { AdvancedExpansionPanelComponent } from './components/advanced-expansion-panel/advanced-expansion-panel.component';
+import { ProgressSpinnerComponent } from './components/progress-spinner/progress-spinner.component';
 
 @NgModule({
   imports: [
@@ -29,6 +30,7 @@ import { AdvancedExpansionPanelComponent } from './components/advanced-expansion
     FileUploadDialogComponent,
     XlsxSidenavFormComponent,
     AdvancedExpansionPanelComponent,
+    ProgressSpinnerComponent,
   ],
   providers: [EventBusService],
   declarations: [],
