@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { ConverterService } from '../../services/converter/converter.service';
 import { EditorService } from '../../services/editor/editor.service';
-import { combineLatest, tap } from 'rxjs';
+import { Subscription, combineLatest, tap } from 'rxjs';
 import {
-  FormGroup,
+  FormControl,
   FormsModule,
   ReactiveFormsModule,
   Validators,
@@ -27,6 +27,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
+import { EditorView } from 'codemirror';
+import { extractAccountAndContainerId, preprocessInput } from './utilities';
 
 @Component({
   selector: 'app-functional-card',
@@ -51,25 +53,15 @@ import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/adv
   styleUrls: ['./functional-card.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class FunctionalCardComponent {
+export class FunctionalCardComponent implements OnDestroy {
+  private subscriptions: Subscription[] = [];
   // TODO: precise validation. For example, the tag manager url should be a valid url
   // gtmId should be a valid gtm id, such as GTM-XXXXXX
   form = this.fb.group({
-    tagManagerUrl: ['', Validators.required],
-    containerName: ['', Validators.required],
-    gtmId: ['', Validators.required],
+    tagManagerUrl: [tagManagerUrl, Validators.required],
+    containerName: [containerName, Validators.required],
+    gtmId: [gtmId, Validators.required],
   });
-
-  // the dummy form for measurement id setting
-  measurementIdForm = this.fb.group({
-    stagingUrl: [''],
-    stagingMeasurementId: [''],
-    productionUrl: [''],
-    productionMeasurementId: [''],
-  });
-
-  isOpen = false;
-  isSettingMeasurementId = false;
 
   constructor(
     private converterService: ConverterService,
@@ -79,42 +71,11 @@ export class FunctionalCardComponent {
   ) {}
 
   convertCode() {
-    combineLatest([this.editorService.editor$.inputJson])
+    const sub = combineLatest([this.editorService.editor$.inputJson])
       .pipe(
         tap(([jsonEditor]) => {
           try {
-            const json = this.preprocessInput(jsonEditor.state.doc.toString());
-            const measurementTableData = this.measurementIdForm.value;
-            const { accountId, containerId } =
-              this.extractAccountAndContainerId(
-                this.form.get('tagManagerUrl')?.value as string
-              );
-
-            const gtmConfigGenerator: GtmConfigGenerator = {
-              accountId: accountId,
-              containerId: containerId,
-              containerName: this.form.get('containerName')?.value as string,
-              gtmId: this.form.get('gtmId')?.value as string,
-              specs: json,
-              stagingUrl: measurementTableData.stagingUrl as string,
-              stagingMeasurementId:
-                measurementTableData.stagingMeasurementId as string,
-              productionUrl: measurementTableData.productionUrl as string,
-              productionMeasurementId:
-                measurementTableData.productionMeasurementId as string,
-            };
-
-            const result = this.converterService.convert(gtmConfigGenerator);
-            console.log(result);
-            this.editorService.setContent(
-              'outputJson',
-              JSON.stringify(result, null, 2)
-            );
-            this.openSuccessConversionDialog(result);
-
-            window.dataLayer.push({
-              event: 'btn_convert_click',
-            });
+            this.performConversion(jsonEditor);
           } catch (error) {
             this.openDialog(error);
             console.error(error);
@@ -122,6 +83,55 @@ export class FunctionalCardComponent {
         })
       )
       .subscribe();
+    this.subscriptions.push(sub);
+  }
+
+  performConversion(jsonEditor: EditorView) {
+    // 1) get the json from the editor
+    const json = preprocessInput(jsonEditor.state.doc.toString());
+
+    // 2) preprocess and set the json to the editor, fixing potential syntax errors
+    this.editorService.setContent(
+      'inputJson',
+      JSON.stringify(JSON.parse(json), null, 2)
+    );
+    // 3) convert the json to gtm config
+    const gtmConfigGenerator = this.generateGtmConfig(json);
+    const result = this.converterService.convert(gtmConfigGenerator);
+    this.postConversion(result);
+  }
+
+  postConversion(result: any) {
+    this.editorService.setContent(
+      'outputJson',
+      JSON.stringify(result, null, 2)
+    );
+    this.openSuccessConversionDialog(result);
+
+    window.dataLayer.push({
+      event: 'btn_convert_click',
+    });
+  }
+
+  generateGtmConfig(json: any): GtmConfigGenerator {
+    const { accountId, containerId } = extractAccountAndContainerId(
+      this.tagManagerUrl.value
+    );
+
+    // TODO: need to do a regex table to output the correct measurement id
+    const gtmConfigGenerator: GtmConfigGenerator = {
+      accountId: accountId,
+      containerId: containerId,
+      containerName: this.containerName.value,
+      gtmId: this.gtmId.value,
+      specs: json,
+      stagingUrl: '',
+      stagingMeasurementId: '',
+      productionUrl: '',
+      productionMeasurementId: '',
+    };
+
+    return gtmConfigGenerator;
   }
 
   onUpload() {
@@ -131,83 +141,8 @@ export class FunctionalCardComponent {
     });
   }
 
-  setMeasurementId() {
-    this.isOpen = true;
-  }
-
-  closeLoginInterface() {
-    this.isOpen = false;
-  }
-
-  extractAccountAndContainerId(url: string) {
-    const regex = /accounts\/(\d+)\/containers\/(\d+)/;
-    const result = regex.exec(url);
-    if (result) {
-      console.log(result);
-      return {
-        accountId: result[1],
-        containerId: result[2],
-      };
-    }
-    return {
-      accountId: '',
-      containerId: '',
-    };
-  }
-
-  handleMeasurementIdSettingFormData(data: FormGroup) {
-    console.log(data);
-    const stagingUrl = data.get('stagingUrl')?.value;
-    const stagingMeasurementId = data.get('stagingMeasurementId')?.value;
-    const productionUrl = data.get('productionUrl')?.value;
-    const productionMeasurementId = data.get('productionMeasurementId')?.value;
-    this.measurementIdForm.patchValue({
-      stagingUrl: stagingUrl,
-      stagingMeasurementId: stagingMeasurementId,
-      productionUrl: productionUrl,
-      productionMeasurementId: productionMeasurementId,
-    });
-
-    if (
-      (stagingUrl && stagingMeasurementId) ||
-      (productionUrl && productionMeasurementId)
-    ) {
-      console.log('staging url and measurement id are filled');
-      this.isSettingMeasurementId = true;
-    }
-
-    console.log(this.measurementIdForm.value);
-  }
-
-  preprocessInput(inputString: string) {
-    try {
-      // Attempt to parse the input JSON string
-      JSON.parse(inputString);
-      return inputString;
-    } catch (error) {
-      // If parsing fails, attempt to fix common issues and try again
-      let fixedString = '';
-      fixedString = fixJsonString(inputString);
-
-      // Attempt to parse the fixed string
-      try {
-        JSON.parse(fixedString);
-        // If parsing succeeds, update the input JSON editor with the fixed string
-        this.editorService.setContent(
-          'inputJson',
-          JSON.stringify(JSON.parse(fixedString), null, 2)
-        );
-        return fixedString;
-      } catch (error) {
-        this.openDialog(error);
-        console.error(error);
-        return 'null';
-      }
-    }
-  }
-
   openDialog(data: any) {
-    console.log('error message', data.message);
+    // console.log('error message', data.message);
     this.dialog.open(ErrorDialogComponent, {
       data: {
         message: data.message,
@@ -223,5 +158,21 @@ export class FunctionalCardComponent {
 
   openFileUploadDialog() {
     this.dialog.open(FileUploadDialogComponent);
+  }
+
+  get tagManagerUrl() {
+    return this.form.get('tagManagerUrl') as FormControl<string>;
+  }
+
+  get containerName() {
+    return this.form.get('containerName') as FormControl<string>;
+  }
+
+  get gtmId() {
+    return this.form.get('gtmId') as FormControl<string>;
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }

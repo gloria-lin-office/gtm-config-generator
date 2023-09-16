@@ -9,6 +9,7 @@ import {
   catchError,
   combineLatest,
   filter,
+  map,
   take,
   takeWhile,
   tap,
@@ -34,6 +35,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProgressSpinnerComponent } from '../progress-spinner/progress-spinner.component';
+import { CustomMatTableComponent } from '../custom-mat-table/custom-mat-table.component';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -53,12 +55,13 @@ import { ProgressSpinnerComponent } from '../progress-spinner/progress-spinner.c
     MatTableModule,
     MatProgressSpinnerModule,
     ProgressSpinnerComponent,
+    CustomMatTableComponent,
   ],
-  templateUrl: `./xlsx-sidenav-form.component.html`,
-  styleUrls: ['./xlsx-sidenav-form.component.scss'],
+  templateUrl: `./xlsx-sidenav.component.html`,
+  styleUrls: ['./xlsx-sidenav.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class XlsxSidenavFormComponent implements AfterViewInit {
+export class XlsxSidenavComponent implements AfterViewInit {
   @ViewChild('sidenav') sidenav: MatSidenav | undefined;
   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
 
@@ -94,20 +97,20 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.initEventBusListeners();
+    this.isLoading().subscribe((val) => {
+      console.log(val);
+    });
   }
 
   toggleSidenav() {
+    this.adjustBodyOverflow();
+    this.isLoading().subscribe();
+  }
+
+  private adjustBodyOverflow() {
     if (!this.sidenav) return;
-
     this.sidenav.toggle();
-
-    // Check if sidenav is opened or closed and adjust body overflow accordingly.
-    if (this.sidenav.opened) {
-      this.isLoading().subscribe();
-      document.body.style.overflow = 'hidden'; // This will disable scrolling.
-    } else {
-      document.body.style.overflow = 'auto'; // This will enable scrolling back.
-    }
+    document.body.style.overflow = this.sidenav.opened ? 'hidden' : 'auto';
   }
 
   // Event bus listeners
@@ -128,53 +131,46 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
 
   switchToSelectedSheet(event: any) {
     const name = event.target.value;
-    this.workbook$
-      .pipe(
-        take(1),
-        filter((workbook) => !!workbook), // Ensure that workbook exists
-        tap((workbook) => {
-          this.postDataToWorker('switchSheet', workbook, name);
-          // for those who already selected one sheet to preview, but then switch to another sheet
-          this.xlsxProcessing.setIsPreviewing(true);
-          this.xlsxProcessing.setIsRenderingJson(false);
-        })
-      )
-      .subscribe();
+    this.withWorkbookHandling(this.workbook$, 'switchSheet', name);
   }
 
   retrieveSpecsFromSource() {
     const name = this.form.get('dataColumnName')?.value as string;
-    this.dataSource$
-      .pipe(
-        take(1),
-        filter((data) => !!data), // Ensure that data exists
-        tap((data) => this.postDataToWorker('extractSpecs', data, name)),
-        catchError(() => {
-          this.handlePostError(name);
-          return EMPTY; // `EMPTY` is an observable that completes immediately without emitting any value.
-        })
-      )
-      .subscribe();
+    this.withDataHandling(this.dataSource$, 'extractSpecs', name);
   }
 
   previewData() {
     const name = this.form.get('dataColumnName')?.value as string;
-
-    this.displayedDataSource$
-      .pipe(
-        take(1),
-        filter((data) => !!data), // Ensure that data exists
-        tap((data) => this.postDataToWorker('previewData', data, name)),
-        catchError(() => {
-          this.handlePostError(name);
-          return EMPTY;
-        })
-      )
-      .subscribe();
+    this.withDataHandling(this.displayedDataSource$, 'previewData', name);
   }
 
-  resetAllData() {
-    this.xlsxProcessing.resetAllData();
+  onAction(action: string) {
+    switch (action) {
+      case 'close': {
+        this.xlsxProcessing.setIsPreviewing(true);
+        this.xlsxProcessing.setIsRenderingJson(false);
+        this.xlsxProcessing.resetAllData();
+        break;
+      }
+      case 'save': {
+        this.retrieveSpecsFromSource();
+        this.xlsxProcessing.setIsPreviewing(true);
+        this.xlsxProcessing.setIsRenderingJson(false);
+        this.xlsxProcessing.resetAllData();
+        break;
+      }
+
+      case 'preview': {
+        this.previewData();
+        this.xlsxProcessing.setIsPreviewing(false);
+        this.xlsxProcessing.setIsRenderingJson(true);
+        break;
+      }
+
+      default: {
+        break;
+      }
+    }
   }
 
   isLoading() {
@@ -213,6 +209,40 @@ export class XlsxSidenavFormComponent implements AfterViewInit {
   }
 
   // Private utilities
+
+  private withDataHandling(
+    source: Observable<any>,
+    action: string,
+    name: string
+  ) {
+    return this.commonPipeHandler(source, action, name).subscribe();
+  }
+
+  private withWorkbookHandling(
+    source: Observable<any>,
+    action: string,
+    name: string
+  ) {
+    this.xlsxProcessing.setIsPreviewing(true);
+    this.xlsxProcessing.setIsRenderingJson(false);
+    return this.commonPipeHandler(source, action, name).subscribe();
+  }
+
+  private commonPipeHandler(
+    observable: Observable<any>,
+    action: string,
+    name: string
+  ) {
+    return observable.pipe(
+      take(1),
+      filter((data) => !!data),
+      tap((data) => this.postDataToWorker(action, data, name)),
+      catchError(() => {
+        this.handlePostError(name);
+        return EMPTY;
+      })
+    );
+  }
 
   private postDataToWorker(action: string, data: any, name: string) {
     this.webWorkerService.postMessage('message', {
