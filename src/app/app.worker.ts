@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import { read, utils } from 'xlsx';
-import { DataRow } from './interfaces/gtm-cofig-generator';
+import { DataRow } from './interfaces/gtm-config-generator';
 
 addEventListener('message', (event) => {
   const { cmd, action, data } = event.data;
