@@ -78,7 +78,7 @@ export class XlsxSidenavComponent implements AfterViewInit {
 
   file: File | undefined;
   loading = true;
-  dataColumnNameString = 'dataLayer specs';
+  dataColumnNameString = 'dataLayer Specs';
   form = this.fb.group({
     worksheetNames: [''],
     dataColumnName: [this.dataColumnNameString, Validators.required],
