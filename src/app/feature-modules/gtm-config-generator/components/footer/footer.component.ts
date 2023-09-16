@@ -23,7 +23,7 @@ import { Component } from '@angular/core';
       </p>
       <p class="text-muted">
         <a
-          href="https://github.com/WodenWang820118/data-layer-checker-ui"
+          href="https://github.com/WodenWang820118/gtm-config-generator"
           target="_blank"
           >View on GitHub (gtm-config-generator module)</a
         >
