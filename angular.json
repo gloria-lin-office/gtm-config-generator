@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "data-layer-checker-ui": {
+    "gtm-config-generator": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -18,7 +18,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "aot": true,
-            "outputPath": "dist/data-layer-checker-ui",
+            "outputPath": "dist/gtm-config-generator",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -63,10 +63,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "data-layer-checker-ui:build:production"
+              "browserTarget": "gtm-config-generator:build:production"
             },
             "development": {
-              "browserTarget": "data-layer-checker-ui:build:development"
+              "browserTarget": "gtm-config-generator:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -74,7 +74,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "data-layer-checker-ui:build"
+            "browserTarget": "gtm-config-generator:build"
           }
         },
         "test": {
