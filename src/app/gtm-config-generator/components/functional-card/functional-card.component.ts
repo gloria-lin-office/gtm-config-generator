@@ -58,9 +58,9 @@ export class FunctionalCardComponent implements OnDestroy {
   // TODO: precise validation. For example, the tag manager url should be a valid url
   // gtmId should be a valid gtm id, such as GTM-XXXXXX
   form = this.fb.group({
-    tagManagerUrl: [tagManagerUrl, Validators.required],
-    containerName: [containerName, Validators.required],
-    gtmId: [gtmId, Validators.required],
+    tagManagerUrl: ['', Validators.required],
+    containerName: ['', Validators.required],
+    gtmId: ['', Validators.required],
   });
 
   constructor(
