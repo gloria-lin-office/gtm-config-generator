@@ -5,7 +5,7 @@ import { ArticleComponent } from '../article/article.component';
 import { FooterComponent } from '../footer/footer.component';
 import { CommonModule } from '@angular/common';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { XlsxSidenavFormComponent } from '../xlsx-sidenav-form/xlsx-sidenav-form.component';
+import { XlsxSidenavComponent } from '../xlsx-sidenav/xlsx-sidenav.component';
 
 @Component({
   selector: 'app-main-page',
@@ -17,7 +17,7 @@ import { XlsxSidenavFormComponent } from '../xlsx-sidenav-form/xlsx-sidenav-form
     FooterComponent,
     CommonModule,
     MatSidenavModule,
-    XlsxSidenavFormComponent,
+    XlsxSidenavComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],

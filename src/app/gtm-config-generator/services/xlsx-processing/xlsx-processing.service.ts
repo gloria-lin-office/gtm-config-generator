@@ -1,4 +1,4 @@
-import { unfixedableJsonString } from './../../components/xlsx-sidenav-form/xlsx-helper';
+import { unfixedableJsonString } from '../../components/xlsx-sidenav/xlsx-helper';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, tap } from 'rxjs';
 import { WebWorkerService } from 'src/app/services/web-worker/web-worker.service';
@@ -6,7 +6,7 @@ import {
   convertSpecStringToObject,
   filterGtmSpecsFromData,
   filterNonEmptyData,
-} from '../../components/xlsx-sidenav-form/xlsx-helper';
+} from '../../components/xlsx-sidenav/xlsx-helper';
 import { DataRow } from 'src/app/interfaces/gtm-cofig-generator';
 import { MatDialog } from '@angular/material/dialog';
 import { EditorService } from '../editor/editor.service';

@@ -10,10 +10,9 @@ import { FooterComponent } from './components/footer/footer.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 import { ConversionSuccessDialogComponent } from './components/conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from './components/file-upload-dialog/file-upload-dialog.component';
-import { XlsxSidenavFormComponent } from './components/xlsx-sidenav-form/xlsx-sidenav-form.component';
+import { XlsxSidenavComponent } from './components/xlsx-sidenav/xlsx-sidenav.component';
 import { EventBusService } from '../services/event-bus/event-bus.service';
 import { AdvancedExpansionPanelComponent } from './components/advanced-expansion-panel/advanced-expansion-panel.component';
-import { ProgressSpinnerComponent } from './components/progress-spinner/progress-spinner.component';
 
 @NgModule({
   imports: [
@@ -28,9 +27,8 @@ import { ProgressSpinnerComponent } from './components/progress-spinner/progress
     ErrorDialogComponent,
     ConversionSuccessDialogComponent,
     FileUploadDialogComponent,
-    XlsxSidenavFormComponent,
+    XlsxSidenavComponent,
     AdvancedExpansionPanelComponent,
-    ProgressSpinnerComponent,
   ],
   providers: [EventBusService],
   declarations: [],
