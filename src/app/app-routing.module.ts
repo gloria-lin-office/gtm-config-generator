@@ -7,9 +7,9 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () =>
-      import('./gtm-config-generator/gtm-config-generator.module').then(
-        (m) => m.GtmConfigGeneratorModule
-      ),
+      import(
+        './feature-modules/gtm-config-generator/gtm-config-generator.module'
+      ).then((m) => m.GtmConfigGeneratorModule),
   },
 ];
 
