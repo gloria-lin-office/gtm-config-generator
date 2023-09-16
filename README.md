@@ -1,32 +1,40 @@
-# DataLayerCheckerUi
+# GTM config generator
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.5.
+# Overview
+The main purpose of the GTM Configuration JSON Generator is to save users' time and increase their productivity by automating the GTM configuration process. By offering an intuitive interface for JSON file creation and management, the app streamlines the workflow, reduces the margin for human error, and ensures the generation of accurate and optimized GTM configuration files. This is especially beneficial for digital marketers, web developers, and SEO experts who need to manage and track multiple website tags, enabling them to focus more on data analysis and less on the technicalities of tag management.
 
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-### Running unit tests with coverage
-
-e.g.,
-`jest --testPathPattern "src/app/gtm-config-generator/services/converter/.*\.spec\.ts$"`
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+# Usage
+The expected input is an array of objects:
+```json
+[
+  {
+    "event": "begin_checkout",
+    "ecommerce": {
+      "value": "$value",
+      "currency": "$currency",
+      "order_source": "$order_source",
+      "shipping_tier": "$shipping_tier",
+      "items": [
+        {
+          "item_brand": "$item1.item_brand",
+          "item_id": "$item1.item_id",
+          "item_name": "$item1.item_name",
+          "item_category": "$item1.item_category",
+          "item_category2": "$item1.item_category2",
+          "item_category3": "$item1.item_category3",
+          "item_category4": "$item1.item_category4",
+          "item_category5": "$item1.item_category5",
+          "currency": "$item1.currency",
+          "discount": "$item1.discount",
+          "price": "$item1.value",
+          "quantity": "$item1.quantity",
+          "coupon": "$item1.coupon",
+          "index": "$item1.index",
+          "item_variant": "$item1.$item_variant"
+        }
+      ]
+    }
+  }
+]
+```
+Note that the dollar sign "$" is intended to be referring to variables, in the current specs. Please add the dollar sign "$" to the beginning of the value.
