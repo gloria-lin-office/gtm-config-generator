@@ -32,10 +32,12 @@ import { MatTableModule } from '@angular/material/table';
 import { WebWorkerService } from '../../../../services/web-worker/web-worker.service';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
+import { XlsxProcessService } from '../../services/xlsx-process/xlsx-process.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProgressSpinnerComponent } from '../progress-spinner/progress-spinner.component';
 import { CustomMatTableComponent } from '../custom-mat-table/custom-mat-table.component';
+
+// TODO: refactor needed
 
 @Component({
   selector: 'app-xlsx-sidenav-form',
@@ -65,14 +67,15 @@ export class XlsxSidenavComponent implements AfterViewInit {
   @ViewChild('sidenav') sidenav: MatSidenav | undefined;
   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
 
-  fileName$ = this.xlsxProcessing.fileName$ as Observable<string>;
-  worksheetNames$ = this.xlsxProcessing.worksheetNames$ as Observable<string[]>;
-  workbook$ = this.xlsxProcessing.workbook$ as Observable<any>;
-  dataSource$ = this.xlsxProcessing.dataSource$ as Observable<any[]>;
-  displayedDataSource$ = this.xlsxProcessing.displayedDataSource$ as Observable<
-    any[]
+  fileName$ = this.xlsxProcessService.fileName$ as Observable<string>;
+  worksheetNames$ = this.xlsxProcessService.worksheetNames$ as Observable<
+    string[]
   >;
-  displayedColumns$ = this.xlsxProcessing.displayedColumns$ as Observable<
+  workbook$ = this.xlsxProcessService.workbook$ as Observable<any>;
+  dataSource$ = this.xlsxProcessService.dataSource$ as Observable<any[]>;
+  displayedDataSource$ = this.xlsxProcessService
+    .displayedDataSource$ as Observable<any[]>;
+  displayedColumns$ = this.xlsxProcessService.displayedColumns$ as Observable<
     string[]
   >;
 
@@ -84,15 +87,15 @@ export class XlsxSidenavComponent implements AfterViewInit {
     dataColumnName: [this.dataColumnNameString, Validators.required],
   });
 
-  numTotalTags$ = this.xlsxProcessing.getNumTotalEvents();
-  numParsedTags$ = this.xlsxProcessing.getNumParsedEvents();
+  numTotalTags$ = this.xlsxProcessService.getNumTotalEvents();
+  numParsedTags$ = this.xlsxProcessService.getNumParsedEvents();
 
   constructor(
     private eventBusService: EventBusService,
     private fb: FormBuilder,
     private webWorkerService: WebWorkerService,
     private dialog: MatDialog,
-    public xlsxProcessing: XlsxProcessingService
+    public xlsxProcessService: XlsxProcessService
   ) {}
 
   ngAfterViewInit() {
@@ -121,7 +124,7 @@ export class XlsxSidenavComponent implements AfterViewInit {
       .pipe(
         tap(async (file) => {
           this.toggleSidenav();
-          await this.xlsxProcessing.loadXlsxFile(file);
+          await this.xlsxProcessService.loadXlsxFile(file);
         })
       )
       .subscribe();
@@ -147,23 +150,23 @@ export class XlsxSidenavComponent implements AfterViewInit {
   onAction(action: string) {
     switch (action) {
       case 'close': {
-        this.xlsxProcessing.setIsPreviewing(true);
-        this.xlsxProcessing.setIsRenderingJson(false);
-        this.xlsxProcessing.resetAllData();
+        this.xlsxProcessService.setIsPreviewing(true);
+        this.xlsxProcessService.setIsRenderingJson(false);
+        this.xlsxProcessService.resetAllData();
         break;
       }
       case 'save': {
         this.retrieveSpecsFromSource();
-        this.xlsxProcessing.setIsPreviewing(true);
-        this.xlsxProcessing.setIsRenderingJson(false);
-        this.xlsxProcessing.resetAllData();
+        this.xlsxProcessService.setIsPreviewing(true);
+        this.xlsxProcessService.setIsRenderingJson(false);
+        this.xlsxProcessService.resetAllData();
         break;
       }
 
       case 'preview': {
         this.previewData();
-        this.xlsxProcessing.setIsPreviewing(false);
-        this.xlsxProcessing.setIsRenderingJson(true);
+        this.xlsxProcessService.setIsPreviewing(false);
+        this.xlsxProcessService.setIsRenderingJson(true);
         break;
       }
 
@@ -177,10 +180,10 @@ export class XlsxSidenavComponent implements AfterViewInit {
     const spinningTime = 1;
     return combineLatest([
       timer(0, 500),
-      this.xlsxProcessing.workbook$,
-      this.xlsxProcessing.dataSource$,
-      this.xlsxProcessing.displayedDataSource$,
-      this.xlsxProcessing.displayedColumns$,
+      this.xlsxProcessService.workbook$,
+      this.xlsxProcessService.dataSource$,
+      this.xlsxProcessService.displayedDataSource$,
+      this.xlsxProcessService.displayedColumns$,
     ]).pipe(
       takeWhile(([timer]) => timer <= spinningTime),
       tap(
@@ -223,8 +226,8 @@ export class XlsxSidenavComponent implements AfterViewInit {
     action: string,
     name: string
   ) {
-    this.xlsxProcessing.setIsPreviewing(true);
-    this.xlsxProcessing.setIsRenderingJson(false);
+    this.xlsxProcessService.setIsPreviewing(true);
+    this.xlsxProcessService.setIsRenderingJson(false);
     return this.commonPipeHandler(source, action, name).subscribe();
   }
 

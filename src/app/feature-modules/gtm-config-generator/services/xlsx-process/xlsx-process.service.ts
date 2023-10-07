@@ -8,7 +8,7 @@ import { FileService } from '../file/file.service';
 @Injectable({
   providedIn: 'root',
 })
-export class XlsxProcessingService {
+export class XlsxProcessService {
   workbook$ = this.workbookService.workbook$;
   worksheetNames$ = this.workbookService.worksheetNames$;
   fileName$ = this.workbookService.fileName$;
