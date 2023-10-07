@@ -1,124 +1,64 @@
-import { unfixedableJsonString } from '../../components/xlsx-sidenav/xlsx-helper';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, tap } from 'rxjs';
+import { map, tap } from 'rxjs';
 import { WebWorkerService } from 'src/app/services/web-worker/web-worker.service';
-import {
-  convertSpecStringToObject,
-  filterGtmSpecsFromData,
-  filterNonEmptyData,
-} from '../../components/xlsx-sidenav/xlsx-helper';
-import { DataRow } from 'src/app/interfaces/gtm-config-generator';
-import { MatDialog } from '@angular/material/dialog';
-import { EditorService } from '../editor/editor.service';
-import { ErrorDialogComponent } from '../../components/error-dialog/error-dialog.component';
+import { WorkbookService } from '../workbook/workbook.service';
+import { XlsxDisplayService } from '../xlsx-display/xlsx-display.service';
+import { FileService } from '../file/file.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class XlsxProcessingService {
-  workbook$ = new BehaviorSubject<any>(null);
-  worksheetNames$ = new BehaviorSubject<string[]>(['']);
-  fileName$ = new BehaviorSubject<string>('');
-  dataSource$ = new BehaviorSubject<any[]>([]);
-  displayedDataSource$ = new BehaviorSubject<any[]>([]);
-  displayedColumns$ = new BehaviorSubject<string[]>([]);
-  isRenderingJson$ = new BehaviorSubject<boolean>(false);
-  isPreviewing$ = new BehaviorSubject<boolean>(true);
+  workbook$ = this.workbookService.workbook$;
+  worksheetNames$ = this.workbookService.worksheetNames$;
+  fileName$ = this.workbookService.fileName$;
+  dataSource$ = this.xlsxDisplayService.dataSource$;
+  displayedDataSource$ = this.xlsxDisplayService.displayedDataSource$;
+  displayedColumns$ = this.xlsxDisplayService.displayedColumns$;
+  isRenderingJson$ = this.xlsxDisplayService.isRenderingJson$;
+  isPreviewing$ = this.xlsxDisplayService.isPreviewing$;
 
   constructor(
     private webWorkerService: WebWorkerService,
-    private dialog: MatDialog,
-    private editorService: EditorService
+    private workbookService: WorkbookService,
+    private fileService: FileService,
+    private xlsxDisplayService: XlsxDisplayService
   ) {}
 
-  loadXlsxFile(file: File) {
-    const fileName = file.name;
-    const reader = new FileReader();
+  async loadXlsxFile(file: File) {
+    try {
+      const fileData = await this.fileService.loadFile(file);
+      this.initializeDataProcessing();
 
-    reader.onload = (e: any) => {
       this.webWorkerService.postMessage('message', {
         action: 'readXlsx',
-        data: e.target.result,
+        data: fileData,
       });
-
-      this.fileName$.next(fileName);
-      this.processXlsxData();
-    };
-
-    reader.onerror = (error) => {
+      this.fileName$.next(file.name);
+    } catch (error) {
       console.error(error);
-    };
-
-    reader.readAsArrayBuffer(file);
+    }
   }
 
-  processXlsxData() {
+  initializeDataProcessing() {
     // Logic from processXlsxData
     this.webWorkerService
       .onMessage()
       .pipe(
         tap((data) => {
           if (data.action === 'readXlsx') {
-            this.handleReadXlsxAction(data);
+            this.workbookService.handleReadXlsxAction(data);
+            this.xlsxDisplayService.handleReadXlsxAction(data);
           } else if (data.action === 'switchSheet') {
-            this.handleSwitchSheetAction(data);
+            this.xlsxDisplayService.handleSwitchSheetAction(data);
           } else if (data.action === 'previewData') {
-            this.handlePreviewDataAction(data);
+            this.xlsxDisplayService.handlePreviewDataAction(data);
           } else if (data.action === 'extractSpecs') {
-            this.handleExtractSpecsAction(data);
+            this.xlsxDisplayService.processAndSetSpecsContent(data.jsonData);
           }
         })
       )
       .subscribe();
-  }
-
-  handleReadXlsxAction(data: any): void {
-    this.workbook$.next(data.workbook);
-    this.worksheetNames$.next(data.sheetNames);
-    this.dataSource$.next(data.jsonData);
-    this.displayedDataSource$.next(filterNonEmptyData(data.jsonData));
-    this.displayedColumns$.next(
-      Object.keys(filterNonEmptyData(data.jsonData)[0])
-    );
-  }
-
-  handleSwitchSheetAction(data: any) {
-    this.dataSource$.next(data.jsonData);
-    this.displayedDataSource$.next(filterNonEmptyData(data.jsonData));
-    this.displayedColumns$.next(
-      Object.keys(filterNonEmptyData(data.jsonData)[0])
-    );
-  }
-
-  handlePreviewDataAction(data: any) {
-    const events = this.processSpecs(data.jsonData);
-    const parsedFailureEvents = unfixedableJsonString;
-
-    const combinedData = events.map((event: any) => {
-      return {
-        Spec: JSON.parse(JSON.stringify(event, null, 2)),
-        FailureEvent: null, // No failure here
-      };
-    });
-
-    // Include your parsedFailureEvents here
-    combinedData.push({
-      Spec: null, // No spec here
-      FailureEvent: parsedFailureEvents as any,
-    });
-
-    this.displayedDataSource$.next(combinedData);
-    this.displayedColumns$.next(['Spec', 'FailureEvent']);
-
-    console.log(this.displayedDataSource$.getValue());
-
-    if (this.displayedDataSource$.getValue()[0].Spec === null) {
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          message: `No events found in the selected colulmn. Please select another sheet and try again.`,
-        },
-      });
-    }
   }
 
   getNumTotalEvents() {
@@ -138,37 +78,12 @@ export class XlsxProcessingService {
     );
   }
 
-  private handleExtractSpecsAction(data: any): any {
-    this.processAndSetSpecsContent(data.jsonData);
-  }
-
-  processSpecs(data: DataRow[]): any[] {
-    const gtmSpecs = filterGtmSpecsFromData(data);
-    const cleanedGtmSpecs = gtmSpecs.map((spec) => {
-      try {
-        return convertSpecStringToObject(spec);
-      } catch (error) {
-        this.dialog.open(ErrorDialogComponent, {
-          data: {
-            message: `Failed to parse the following spec: ${spec}`,
-          },
-        });
-      }
-    });
-    return cleanedGtmSpecs.filter((spec) => spec && spec.event);
-  }
-
-  processAndSetSpecsContent(data: DataRow[]): void {
-    const events = this.processSpecs(data);
-    this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
-  }
-
   getIsRenderingJson() {
     return this.isRenderingJson$.asObservable();
   }
 
   setIsRenderingJson(isRenderingJson: boolean) {
-    this.isRenderingJson$.next(isRenderingJson);
+    this.xlsxDisplayService.setIsRenderingJson(isRenderingJson);
   }
 
   getIsPreviewing() {
@@ -176,17 +91,11 @@ export class XlsxProcessingService {
   }
 
   setIsPreviewing(isPreviewing: boolean) {
-    this.isPreviewing$.next(isPreviewing);
+    this.xlsxDisplayService.setIsPreviewing(isPreviewing);
   }
 
   resetAllData() {
-    this.workbook$.next(null);
-    this.worksheetNames$.next(['']);
-    this.fileName$.next('');
-    this.dataSource$.next([]);
-    this.displayedDataSource$.next([]);
-    this.displayedColumns$.next([]);
-    this.isRenderingJson$.next(false);
-    this.isPreviewing$.next(true);
+    this.workbookService.resetWorkbookData();
+    this.xlsxDisplayService.resetDisplayData();
   }
 }

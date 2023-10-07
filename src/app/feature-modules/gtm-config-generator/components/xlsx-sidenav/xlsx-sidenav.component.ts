@@ -119,9 +119,9 @@ export class XlsxSidenavComponent implements AfterViewInit {
     this.eventBusService
       .on('toggleDrawer')
       .pipe(
-        tap((file) => {
+        tap(async (file) => {
           this.toggleSidenav();
-          this.xlsxProcessing.loadXlsxFile(file);
+          await this.xlsxProcessing.loadXlsxFile(file);
         })
       )
       .subscribe();
