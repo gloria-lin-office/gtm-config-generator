@@ -1,5 +1,5 @@
-import { fixJsonString } from '../../services/converter/utilities/utilities';
 import { DataRow } from '../../../../interfaces/gtm-config-generator';
+import { fixJsonString } from '../../services/converter/utilities/json-string-utils';
 
 export const unfixedableJsonString: string[] = [];
 

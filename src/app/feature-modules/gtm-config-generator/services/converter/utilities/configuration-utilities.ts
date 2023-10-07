@@ -5,13 +5,13 @@ import {
   TriggerConfig,
   VariableConfig,
 } from '../../../../../interfaces/gtm-config-generator';
-import { getTags } from '../tag-utilities/tag-utilities';
-import { getTriggers } from '../trigger-utilities/trigger-utilities';
-import { outputTime } from '../utilities/utilities';
-import {
-  getBuiltInVariables,
-  getVariables,
-} from '../variable-utilities/variable-utilities';
+import { TagManager } from '../gtm-json-manager/managers/tag-manager';
+import { VariableManger } from '../gtm-json-manager/managers/variable-manager';
+import { getTriggers } from '../gtm-json-manager/triggers/trigger-utilities';
+import { outputTime } from './date-utils';
+
+const variableManager = new VariableManger();
+const tagManager = new TagManager();
 
 export function getGTMFinalConfiguration(
   accountId: string,
@@ -79,14 +79,14 @@ export function exportGtmJSON(
   triggers: Trigger[],
   measurementIdCustomJS: string
 ) {
-  const _variable = getVariables(
+  const _variable = variableManager.getVariables(
     accountId,
     containerId,
     dataLayers,
     measurementIdCustomJS
   );
   const _triggers = getTriggers(accountId, containerId, data, triggers);
-  const _tags = getTags(
+  const _tags = tagManager.getAllTags(
     accountId,
     containerId,
     data,
@@ -94,7 +94,11 @@ export function exportGtmJSON(
     tags,
     dataLayers
   );
-  const builtInVariable = getBuiltInVariables(accountId, containerId, data);
+  const builtInVariable = variableManager.getBuiltInVariables(
+    accountId,
+    containerId,
+    data
+  );
 
   return getGTMFinalConfiguration(
     accountId,

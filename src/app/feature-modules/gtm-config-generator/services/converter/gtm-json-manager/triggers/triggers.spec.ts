@@ -1,3 +1,8 @@
+import { createTrigger } from './event-trigger';
+import { createScrollTrigger, scrollTriggers } from './scroll-trigger';
+import { getTriggers } from './trigger-utilities';
+import { videoTrigger } from './video-trigger';
+
 jest.mock('../utilities/utilities', () => ({
   isIncludeVideo: jest.fn().mockReturnValue(true),
   isIncludeScroll: jest.fn().mockReturnValue(true),
@@ -8,14 +13,6 @@ jest.mock('../constant', () => ({
   scrollTriggers: jest.fn(),
   videoTrigger: jest.fn(),
 }));
-
-import { videoTrigger, scrollTriggers } from '../constant';
-import {
-  createTrigger,
-  createVideoTrigger,
-  createScrollTrigger,
-  getTriggers,
-} from './trigger-utilities';
 
 describe('Helper Functions', () => {
   const MOCK_ACCOUNT_ID = '1';
@@ -135,3 +132,10 @@ describe('Helper Functions', () => {
     });
   });
 });
+function createVideoTrigger(
+  MOCK_ACCOUNT_ID: string,
+  MOCK_CONTAINER_ID: string,
+  arg2: never[]
+) {
+  throw new Error('Function not implemented.');
+}

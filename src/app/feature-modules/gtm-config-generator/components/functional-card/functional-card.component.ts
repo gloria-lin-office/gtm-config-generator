@@ -21,7 +21,6 @@ import { FormBuilder } from '@angular/forms';
 import { GtmConfigGenerator } from 'src/app/interfaces/gtm-config-generator';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { containerName, gtmId, tagManagerUrl } from './test-data';
-import { fixJsonString } from '../../services/converter/utilities/utilities';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
@@ -58,9 +57,9 @@ export class FunctionalCardComponent implements OnDestroy {
   // TODO: precise validation. For example, the tag manager url should be a valid url
   // gtmId should be a valid gtm id, such as GTM-XXXXXX
   form = this.fb.group({
-    tagManagerUrl: ['', Validators.required],
-    containerName: ['', Validators.required],
-    gtmId: ['', Validators.required],
+    tagManagerUrl: [tagManagerUrl, Validators.required],
+    containerName: [containerName, Validators.required],
+    gtmId: [gtmId, Validators.required],
   });
 
   constructor(

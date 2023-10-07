@@ -1,26 +1,35 @@
+import { DataLayerManager } from './utilities/data-layer-utils';
 import { Injectable } from '@angular/core';
-import { exportGtmJSON } from './configuration-utilities/configuration-utilities';
+import { exportGtmJSON } from './utilities/configuration-utilities';
 import {
   GtmConfigGenerator,
   Tag,
   Trigger,
-  Parameter,
 } from '../../../../interfaces/gtm-config-generator';
-import {
-  formatSingleEventParameters,
-  getAllObjectPaths,
-  isBuiltInEvent,
-} from './utilities/utilities';
+import { formatSingleEventParameters } from './utilities/parameter-formatting-utils';
+import { TagManager } from './gtm-json-manager/managers/tag-manager';
+import { TriggerManager } from './gtm-json-manager/managers/trigger-manager';
+import { createMeasurementIdCustomJSVariable } from './gtm-json-manager/variables/cjs-measurement-id-variable';
+import { getAllObjectPaths } from './utilities/object-path-utils';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConverterService {
   // dataLayers stores all variable paths from the input JSON
-  dataLayers: string[] = [];
+  tagManager: TagManager;
+  triggerManager: TriggerManager;
+  dataLayerManager: DataLayerManager;
+  // dataLayers: string[] = [];
   triggers: Trigger[] = [];
   tags: Tag[] = [];
   measurementIdCustomJS = '';
+
+  constructor() {
+    this.tagManager = new TagManager();
+    this.triggerManager = new TriggerManager();
+    this.dataLayerManager = new DataLayerManager();
+  }
 
   convert(gtmConfigGenerator: GtmConfigGenerator) {
     try {
@@ -35,8 +44,14 @@ export class ConverterService {
           JSON.stringify(eventParameters)
         );
 
-        this.formatSingleTrigger(eventName);
-        this.formatSingleTag(formattedParameters, eventName);
+        this.triggerManager.formatSingleTrigger(eventName);
+        const triggers = this.triggerManager.getTriggers();
+
+        this.tagManager.formatSingleTag(
+          formattedParameters,
+          eventName,
+          triggers
+        );
 
         return { formattedParameters, eventName };
       });
@@ -48,7 +63,13 @@ export class ConverterService {
         productionUrl: gtmConfigGenerator.productionUrl,
       };
 
-      this.setMeasurementIdCustomJSVariable(measurementIdSettings);
+      // get all necesssary data for export
+      const triggers = this.triggerManager.getTriggers();
+      const tags = this.tagManager.getTags();
+      const measurementIdCustomJS = createMeasurementIdCustomJSVariable(
+        measurementIdSettings
+      );
+      const dataLayers = this.dataLayerManager.getDataLayers();
 
       return exportGtmJSON(
         formattedData,
@@ -56,80 +77,15 @@ export class ConverterService {
         gtmConfigGenerator.containerId,
         gtmConfigGenerator.containerName,
         gtmConfigGenerator.gtmId,
-        this.tags,
-        this.dataLayers,
-        this.triggers,
-        this.measurementIdCustomJS
+        tags,
+        dataLayers,
+        triggers,
+        measurementIdCustomJS
       );
     } catch (error) {
       console.error('error: ', error);
       throw { error };
     }
-  }
-
-  // ------------------------------------------------------------
-  // tags-related methods
-  // ------------------------------------------------------------
-
-  formatSingleTag(formattedParams: Parameter[], eventName: string) {
-    if (isBuiltInEvent(eventName)) {
-      return;
-    }
-    this.addTagIfNotExists(eventName, formattedParams);
-  }
-
-  addTagIfNotExists(eventName: string, formattedParams: Parameter[]) {
-    if (!this.tags.some((tag) => tag.name === eventName) && this.triggers) {
-      this.tags.push({
-        name: eventName,
-        parameters: formattedParams,
-        triggers: [
-          this.triggers.find((trigger) => trigger.name === eventName)!,
-        ],
-      });
-    }
-  }
-
-  // ------------------------------------------------------------
-  // triggers-related methods
-  // ------------------------------------------------------------
-
-  formatSingleTrigger(eventName: string) {
-    if (isBuiltInEvent(eventName)) {
-      return;
-    }
-
-    this.addTriggerIfNotExists(eventName);
-  }
-
-  addTriggerIfNotExists(eventName: string) {
-    if (!this.triggers.some((trigger) => trigger.name === eventName)) {
-      this.triggers.push({
-        name: eventName,
-        triggerId: (this.triggers.length + 1).toString(),
-      });
-    }
-  }
-
-  // ------------------------------------------------------------
-  // variables-related methods
-  // ------------------------------------------------------------
-
-  setMeasurementIdCustomJSVariable(data: { [x: string]: any }) {
-    const stagingMeasurementId = data['stagingMeasurementId'];
-    const stagingUrl = data['stagingUrl'];
-    const productionMeasurementId = data['productionMeasurementId'];
-    const productionUrl = data['productionUrl'];
-
-    const measurementIdCustomJS = `function() {\n  
-        var MEASUREMENT_ID_STAGING = '${stagingMeasurementId}'\n  
-        var MEASUREMENT_ID_PROD = '${productionMeasurementId}'\n\n  
-        var originUrl = window.origin\n\n  
-        if(originUrl === '${stagingUrl}') return MEASUREMENT_ID_STAGING\n  
-        if(originUrl === '${productionUrl}') return MEASUREMENT_ID_PROD\n\n  
-        throw new Error('Invalid environment provided')\n
-      }\n`;
-    this.measurementIdCustomJS = measurementIdCustomJS;
   }
 
   // ------------------------------------------------------------
@@ -153,7 +109,7 @@ export class ConverterService {
 
       // the paths is for building data layer variables
       const paths = getAllObjectPaths(Json);
-      this.addDataLayer(paths);
+      this.dataLayerManager.addDataLayer(paths);
 
       return parsedJSON;
     } else {
@@ -162,14 +118,5 @@ export class ConverterService {
         'Cannot parse JSON. Please revise the format to follow JSON structure rules'
       );
     }
-  }
-
-  addDataLayer(paths: string[]) {
-    const uniquePaths = this.filterDuplicates(paths, this.dataLayers);
-    this.dataLayers.push(...uniquePaths);
-  }
-
-  filterDuplicates(paths: string[], dataLayers: string[]): string[] {
-    return paths.filter((path) => !dataLayers.includes(path));
   }
 }
