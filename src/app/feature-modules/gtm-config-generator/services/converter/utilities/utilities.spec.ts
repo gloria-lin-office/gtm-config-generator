@@ -7,7 +7,7 @@ import {
   formatSingleEventParameters,
   formatParameters,
   getAllObjectPaths,
-} from './utilities';
+} from './parameter-formatting-utils';
 
 export const BUILT_IN_SCROLL_EVENT = ['scroll'];
 export const BUILT_IN_VIDEO_EVENTS = [

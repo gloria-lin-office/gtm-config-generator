@@ -9,7 +9,7 @@ import {
   createVariable,
   getBuiltInVariables,
   getVariables,
-} from './variable-utilities';
+} from '../managers/variable-manager';
 
 describe('Helper Functions', () => {
   // Mock data for tests

@@ -2,22 +2,16 @@ export interface NestedObject {
   [key: string]: any;
 }
 
-interface ParameterMap {
+export interface ParameterMap {
   type: string;
-  key: string;
-  value: string;
-}
-
-interface ParameterList {
-  type: string;
-  map: ParameterMap[];
+  map: Parameter[];
 }
 
 export interface Parameter {
   type: string;
   key: string;
   value?: string;
-  list?: ParameterList[];
+  list?: ParameterMap[];
 }
 
 export interface CustomEventFilter {

@@ -1,24 +1,20 @@
-import { unfixedableJsonString } from '../../components/xlsx-sidenav/xlsx-helper';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, tap } from 'rxjs';
-import { WebWorkerService } from 'src/app/services/web-worker/web-worker.service';
+import { BehaviorSubject } from 'rxjs';
 import {
   convertSpecStringToObject,
   filterGtmSpecsFromData,
   filterNonEmptyData,
+  unfixedableJsonString,
 } from '../../components/xlsx-sidenav/xlsx-helper';
-import { DataRow } from 'src/app/interfaces/gtm-config-generator';
-import { MatDialog } from '@angular/material/dialog';
 import { EditorService } from '../editor/editor.service';
+import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../../components/error-dialog/error-dialog.component';
+import { DataRow } from 'src/app/interfaces/gtm-config-generator';
 
 @Injectable({
   providedIn: 'root',
 })
-export class XlsxProcessingService {
-  workbook$ = new BehaviorSubject<any>(null);
-  worksheetNames$ = new BehaviorSubject<string[]>(['']);
-  fileName$ = new BehaviorSubject<string>('');
+export class XlsxDisplayService {
   dataSource$ = new BehaviorSubject<any[]>([]);
   displayedDataSource$ = new BehaviorSubject<any[]>([]);
   displayedColumns$ = new BehaviorSubject<string[]>([]);
@@ -26,60 +22,14 @@ export class XlsxProcessingService {
   isPreviewing$ = new BehaviorSubject<boolean>(true);
 
   constructor(
-    private webWorkerService: WebWorkerService,
     private dialog: MatDialog,
     private editorService: EditorService
   ) {}
 
-  loadXlsxFile(file: File) {
-    const fileName = file.name;
-    const reader = new FileReader();
-
-    reader.onload = (e: any) => {
-      this.webWorkerService.postMessage('message', {
-        action: 'readXlsx',
-        data: e.target.result,
-      });
-
-      this.fileName$.next(fileName);
-      this.processXlsxData();
-    };
-
-    reader.onerror = (error) => {
-      console.error(error);
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  processXlsxData() {
-    // Logic from processXlsxData
-    this.webWorkerService
-      .onMessage()
-      .pipe(
-        tap((data) => {
-          if (data.action === 'readXlsx') {
-            this.handleReadXlsxAction(data);
-          } else if (data.action === 'switchSheet') {
-            this.handleSwitchSheetAction(data);
-          } else if (data.action === 'previewData') {
-            this.handlePreviewDataAction(data);
-          } else if (data.action === 'extractSpecs') {
-            this.handleExtractSpecsAction(data);
-          }
-        })
-      )
-      .subscribe();
-  }
-
+  // TODO: data types
   handleReadXlsxAction(data: any): void {
-    this.workbook$.next(data.workbook);
-    this.worksheetNames$.next(data.sheetNames);
     this.dataSource$.next(data.jsonData);
-    this.displayedDataSource$.next(filterNonEmptyData(data.jsonData));
-    this.displayedColumns$.next(
-      Object.keys(filterNonEmptyData(data.jsonData)[0])
-    );
+    this.updateDisplayData(filterNonEmptyData(data.jsonData));
   }
 
   handleSwitchSheetAction(data: any) {
@@ -121,27 +71,6 @@ export class XlsxProcessingService {
     }
   }
 
-  getNumTotalEvents() {
-    return this.dataSource$.pipe(
-      map((data) => {
-        return data.length;
-      })
-    );
-  }
-
-  getNumParsedEvents() {
-    return this.displayedDataSource$.pipe(
-      map((data) => {
-        // note the reason for -1 is because the last row is the failure events as an array
-        return data.length - 1;
-      })
-    );
-  }
-
-  private handleExtractSpecsAction(data: any): any {
-    this.processAndSetSpecsContent(data.jsonData);
-  }
-
   processSpecs(data: DataRow[]): any[] {
     const gtmSpecs = filterGtmSpecsFromData(data);
     const cleanedGtmSpecs = gtmSpecs.map((spec) => {
@@ -158,35 +87,29 @@ export class XlsxProcessingService {
     return cleanedGtmSpecs.filter((spec) => spec && spec.event);
   }
 
+  updateDisplayData(data: any) {
+    this.displayedDataSource$.next(data);
+    this.displayedColumns$.next(Object.keys(data[0]));
+  }
+
   processAndSetSpecsContent(data: DataRow[]): void {
     const events = this.processSpecs(data);
     this.editorService.setContent('inputJson', JSON.stringify(events, null, 2));
   }
 
-  getIsRenderingJson() {
-    return this.isRenderingJson$.asObservable();
+  resetDisplayData() {
+    this.dataSource$.next([]);
+    this.displayedDataSource$.next([]);
+    this.displayedColumns$.next([]);
+    this.isRenderingJson$.next(false);
+    this.isPreviewing$.next(true);
   }
 
   setIsRenderingJson(isRenderingJson: boolean) {
     this.isRenderingJson$.next(isRenderingJson);
   }
 
-  getIsPreviewing() {
-    return this.isPreviewing$.asObservable();
-  }
-
   setIsPreviewing(isPreviewing: boolean) {
     this.isPreviewing$.next(isPreviewing);
-  }
-
-  resetAllData() {
-    this.workbook$.next(null);
-    this.worksheetNames$.next(['']);
-    this.fileName$.next('');
-    this.dataSource$.next([]);
-    this.displayedDataSource$.next([]);
-    this.displayedColumns$.next([]);
-    this.isRenderingJson$.next(false);
-    this.isPreviewing$.next(true);
   }
 }

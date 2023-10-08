@@ -4,14 +4,12 @@ jest.mock('../utilities/utilities', () => ({
   hasExistedDataLayer: jest.fn().mockReturnValue(false),
 }));
 
-import {
-  createGA4Configuration,
-  createTag,
-  createVideoTag,
-  createScrollTag,
-  getTags,
-} from './tag-utilities';
 import { Tag, TriggerConfig } from 'src/app/interfaces/gtm-config-generator';
+import { createTag } from './event-tag';
+import { createGA4Configuration } from './ga4-configuration-tag';
+import { createScrollTag } from './scroll-tag';
+import { getTags } from './tag-utilities';
+import { createVideoTag } from './video-tag';
 
 const mockTags: Tag[] = [
   {

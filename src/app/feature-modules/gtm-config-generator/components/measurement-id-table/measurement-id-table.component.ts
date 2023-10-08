@@ -1,24 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { OverlayModule } from '@angular/cdk/overlay';
-import { MatIconModule } from '@angular/material/icon';
-import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { FormGroup } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-measurement-id-table',
   standalone: true,
-  imports: [
-    OverlayModule,
-    MatIconModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-  ],
+  imports: [SharedModule],
   template: ` <ng-template
     cdkConnectedOverlay
     [cdkConnectedOverlayOpen]="isOpen"

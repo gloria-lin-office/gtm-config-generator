@@ -1,13 +1,12 @@
 import { Observable } from 'rxjs';
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-processing.service';
+import { XlsxProcessService } from '../../services/xlsx-process/xlsx-process.service';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-custom-mat-table',
   standalone: true,
-  imports: [CommonModule, MatTableModule],
+  imports: [SharedModule],
   template: `
     <ng-container *ngIf="displayedDataSource$ | async as dataSource">
       <table mat-table [dataSource]="dataSource">
@@ -20,11 +19,11 @@ import { XlsxProcessingService } from '../../services/xlsx-processing/xlsx-proce
           </th>
           <td mat-cell *matCellDef="let element">
             <pre
-              *ngIf="xlsxProcessingService.getIsRenderingJson() | async"
+              *ngIf="xlsxProcessService.getIsRenderingJson() | async"
               style="padding: 5px 0"
               >{{ element[column] | json }} </pre
             >
-            <div *ngIf="!(xlsxProcessingService.getIsRenderingJson() | async)">
+            <div *ngIf="!(xlsxProcessService.getIsRenderingJson() | async)">
               {{ element[column] }}
             </div>
           </td>
@@ -45,5 +44,5 @@ export class CustomMatTableComponent {
   @Input() displayedDataSource$!: Observable<any[]>;
   @Input() displayedColumns$!: Observable<string[]>;
 
-  constructor(public xlsxProcessingService: XlsxProcessingService) {}
+  constructor(public xlsxProcessService: XlsxProcessService) {}
 }

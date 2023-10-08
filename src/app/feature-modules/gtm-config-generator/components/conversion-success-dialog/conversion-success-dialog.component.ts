@@ -6,11 +6,12 @@ import {
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-conversion-success-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatIconModule, MatButtonModule],
+  imports: [SharedModule],
   template: `
     <div class="conversion-success"></div>
     <h2 mat-dialog-title>Conversion Successful</h2>

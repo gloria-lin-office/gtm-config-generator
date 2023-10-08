@@ -1,28 +1,16 @@
 import { Component } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
-import { NgIf } from '@angular/common';
 import { EditorService } from '../../services/editor/editor.service';
 import { BehaviorSubject, tap } from 'rxjs';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { EventBusService } from '../../../../services/event-bus/event-bus.service';
+import { SharedModule } from '../../shared.module';
+import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
 
 @Component({
   selector: 'app-file-upload-dialog',
   standalone: true,
-  imports: [
-    MatDialogModule,
-    MatIconModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    NgIf,
-    MatSidenavModule,
-  ],
+  imports: [SharedModule],
   template: `<div class="file-upload-dialog">
     <mat-dialog-content class="file-upload-dialog__actions">
       <div class="file-upload-dialog__actions__action">
@@ -78,8 +66,8 @@ import { EventBusService } from '../../../../services/event-bus/event-bus.servic
 export class FileUploadDialogComponent {
   constructor(
     public dialog: MatDialog,
-    private editorService: EditorService,
-    private eventBusService: EventBusService
+    private eventBusService: EventBusService,
+    private editorFacadeService: EditorFacadeService
   ) {}
 
   selectedFile: File | null = null;
@@ -158,10 +146,7 @@ export class FileUploadDialogComponent {
       .pipe(
         tap((data) => {
           if (data !== null || data !== undefined) {
-            this.editorService.setContent(
-              'inputJson',
-              JSON.stringify(data, null, 2)
-            );
+            this.editorFacadeService.setInputJsonContent(data);
             this.dialog.closeAll();
           }
         })
