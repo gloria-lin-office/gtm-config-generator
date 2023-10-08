@@ -1,4 +1,5 @@
 import { TriggerConfig } from 'src/app/interfaces/gtm-config-generator';
+import { createTemplateParameter } from '../parameter-utils';
 
 export function createTrigger(
   accountId: string,
@@ -14,16 +15,8 @@ export function createTrigger(
       {
         type: 'EQUALS',
         parameter: [
-          {
-            type: 'TEMPLATE',
-            key: 'arg0',
-            value: '{{_event}}',
-          },
-          {
-            type: 'TEMPLATE',
-            key: 'arg1',
-            value: trigger,
-          },
+          createTemplateParameter('arg0', '{{_event}}'),
+          createTemplateParameter('arg1', trigger),
         ],
       },
     ],

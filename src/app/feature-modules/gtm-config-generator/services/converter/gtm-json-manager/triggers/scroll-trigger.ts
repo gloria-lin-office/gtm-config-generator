@@ -1,5 +1,9 @@
 import { TriggerConfig } from 'src/app/interfaces/gtm-config-generator';
 import { isIncludeScroll } from '../../utilities/event-utils';
+import {
+  createBooleanParameter,
+  createTemplateParameter,
+} from '../parameter-utils';
 
 export function scrollTriggers({
   accountId,
@@ -17,31 +21,14 @@ export function scrollTriggers({
     type: 'SCROLL_DEPTH',
     fingerprint: '1687976535532',
     parameter: [
-      {
-        type: 'TEMPLATE',
-        key: 'verticalThresholdUnits',
-        value: 'PERCENT',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'verticalThresholdsPercent',
-        value: verticalThresholdsPercent,
-      },
-      {
-        type: 'BOOLEAN',
-        key: 'verticalThresholdOn',
-        value: 'true',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'triggerStartOption',
-        value: 'WINDOW_LOAD',
-      },
-      {
-        type: 'BOOLEAN',
-        key: 'horizontalThresholdOn',
-        value: 'false',
-      },
+      createTemplateParameter('verticalThresholdUnits', 'PERCENT'),
+      createTemplateParameter(
+        'verticalThresholdsPercent',
+        verticalThresholdsPercent
+      ),
+      createBooleanParameter('verticalThresholdOn', 'true'),
+      createTemplateParameter('triggerStartOption', 'WINDOW_LOAD'),
+      createBooleanParameter('horizontalThresholdOn', 'false'),
     ],
   };
 }

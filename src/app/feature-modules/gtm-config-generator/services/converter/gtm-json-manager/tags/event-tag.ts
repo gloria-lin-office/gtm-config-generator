@@ -2,9 +2,17 @@ import {
   Tag,
   TagConfig,
   TriggerConfig,
-} from 'src/app/interfaces/gtm-config-generator';
+} from '../../../../../../../app/interfaces/gtm-config-generator';
+import {
+  createTemplateParameter,
+  createListParameter,
+  createTagReferenceParameter,
+  findTriggerIdByEventName,
+  createBooleanParameter,
+} from '../parameter-utils';
 
 export function createTag(
+  configurationName: string,
   accountId: string,
   containerId: string,
   tag: Tag,
@@ -20,53 +28,13 @@ export function createTag(
     accountId,
     containerId,
     parameter: [
-      {
-        type: 'BOOLEAN',
-        key: 'sendEcommerceData',
-        value: 'false',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'eventName',
-        value: tag.name,
-      },
-      {
-        type: 'LIST',
-        key: 'eventParameters',
-        list: tag.parameters.map((param) => {
-          const dLReference = `${param.value}`;
-          return {
-            type: 'MAP',
-            map: [
-              {
-                type: 'TEMPLATE',
-                key: 'name',
-                value: `${param.key}`,
-              },
-              {
-                type: 'TEMPLATE',
-                key: 'value',
-                value: `{{DLV - ${dLReference}}}`,
-              },
-            ],
-          };
-        }),
-      },
-      {
-        type: 'TAG_REFERENCE',
-        key: 'measurementId',
-        value: 'GA4 Configuration',
-      },
+      createBooleanParameter('sendEcommerceData', 'false'),
+      createTemplateParameter('eventName', tag.name),
+      createListParameter('eventParameters', tag.parameters),
+      createTagReferenceParameter('measurementId', configurationName),
     ],
-    firingTriggerId: tag.triggers.map(
-      (t0) =>
-        triggers.find(
-          (t1) =>
-            t1.customEventFilter &&
-            t1.customEventFilter[0] &&
-            t1.customEventFilter[0].parameter[1] &&
-            t1.customEventFilter[0].parameter[1].value === t0.name
-        )?.triggerId as string
+    firingTriggerId: tag.triggers.map((t) =>
+      findTriggerIdByEventName(t.name, triggers)
     ),
   };
 }

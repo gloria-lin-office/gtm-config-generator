@@ -39,7 +39,7 @@ export class FunctionalCardComponent implements OnDestroy {
     private converterService: ConverterService,
     private fb: FormBuilder,
     public dialog: MatDialog,
-    private editorFacadeService: EditorFacadeService
+    public editorFacadeService: EditorFacadeService
   ) {}
 
   convertCode() {
@@ -59,10 +59,14 @@ export class FunctionalCardComponent implements OnDestroy {
       .subscribe();
   }
 
+  // TODO: enable configurationName to be passed in
   performConversion(json: any) {
     this.editorFacadeService.setInputJsonContent(json);
     const gtmConfigGenerator = this.generateGtmConfig(json);
-    const result = this.converterService.convert(gtmConfigGenerator);
+    const result = this.converterService.convert(
+      'GA4 Configuration Tag',
+      gtmConfigGenerator
+    );
     this.postConversion(result);
   }
 

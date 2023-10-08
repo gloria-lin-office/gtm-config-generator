@@ -3,16 +3,20 @@ import {
   TriggerConfig,
 } from 'src/app/interfaces/gtm-config-generator';
 import { isIncludeScroll } from '../../utilities/event-utils';
+import {
+  createBooleanParameter,
+  createBuiltInListParameter,
+  createMapParameter,
+  createTagReferenceParameter,
+  createTemplateParameter,
+} from '../parameter-utils';
 
-export function scrollTag({
-  accountId,
-  containerId,
-  triggerId,
-}: {
-  accountId: string;
-  containerId: string;
-  triggerId: string;
-}): TagConfig[] {
+export function scrollTag(
+  configurationName: string,
+  accountId: string,
+  containerId: string,
+  triggerId: string
+): TagConfig[] {
   return [
     {
       accountId,
@@ -20,42 +24,15 @@ export function scrollTag({
       name: 'GA4 - scroll',
       type: 'gaawe',
       parameter: [
-        {
-          type: 'BOOLEAN',
-          key: 'sendEcommerceData',
-          value: 'false',
-        },
-        {
-          type: 'TEMPLATE',
-          key: 'eventName',
-          value: 'scroll',
-        },
-        {
-          type: 'LIST',
-          key: 'eventParameters',
-          list: [
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'scroll_percentage',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Scroll Depth Threshold}}',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'TAG_REFERENCE',
-          key: 'measurementId',
-          value: 'GA4 Configuration',
-        },
+        createBooleanParameter('sendEcommerceData', 'false'),
+        createTemplateParameter('eventName', 'scroll'),
+        createBuiltInListParameter('eventParameters', [
+          createMapParameter(
+            'scroll_depth_threshold',
+            '{{Scroll Depth Threshold}}'
+          ),
+        ]),
+        createTagReferenceParameter('measurementId', configurationName),
       ],
       fingerprint: '1690184079241',
       firingTriggerId: [triggerId],
@@ -64,6 +41,7 @@ export function scrollTag({
 }
 
 export function createScrollTag(
+  configurationName: string,
   accountId: string,
   containerId: string,
   data: Record<string, string>[],
@@ -79,11 +57,12 @@ export function createScrollTag(
       throw new Error("Couldn't find matching trigger for scroll tag");
     }
 
-    return scrollTag({
+    return scrollTag(
+      configurationName,
       accountId,
       containerId,
-      triggerId: trigger.triggerId as string,
-    });
+      trigger.triggerId as string
+    );
   } catch (error) {
     console.error('Error while creating scroll tag:', error);
     // Potentially re-throw the error if it should be handled upstream

@@ -6,7 +6,7 @@ export function createMeasurementIdCJS(
   measurementIdCustomJS: string
 ): VariableConfig {
   return {
-    name: 'Custom JS - Measurement ID',
+    name: 'Measurement ID',
     type: 'jsm',
     accountId,
     containerId,

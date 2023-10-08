@@ -44,6 +44,7 @@ export class TagManager {
   }
 
   getAllTags(
+    configurationName: string,
     accountId: string,
     containerId: string,
     data: Record<string, string>[],
@@ -53,14 +54,33 @@ export class TagManager {
   ): TagConfig[] {
     return [
       // config tag
-      createGA4Configuration(accountId, containerId),
+      createGA4Configuration(configurationName, accountId, containerId),
       // normal tags
       ...tags.map((tag) => {
-        return createTag(accountId, containerId, tag, dataLayers, triggers);
+        return createTag(
+          configurationName,
+          accountId,
+          containerId,
+          tag,
+          dataLayers,
+          triggers
+        );
       }),
       // built-in tags. Currently only video and scroll
-      ...createVideoTag(accountId, containerId, data, triggers),
-      ...createScrollTag(accountId, containerId, data, triggers),
+      ...createVideoTag(
+        configurationName,
+        accountId,
+        containerId,
+        data,
+        triggers
+      ),
+      ...createScrollTag(
+        configurationName,
+        accountId,
+        containerId,
+        data,
+        triggers
+      ),
     ].map((_data, index) => ({
       ..._data,
       tagId: (index + 1).toString(),

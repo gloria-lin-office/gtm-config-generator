@@ -3,16 +3,20 @@ import {
   TriggerConfig,
 } from 'src/app/interfaces/gtm-config-generator';
 import { isIncludeVideo } from '../../utilities/event-utils';
+import {
+  createBooleanParameter,
+  createBuiltInListParameter,
+  createMapParameter,
+  createTagReferenceParameter,
+  createTemplateParameter,
+} from '../parameter-utils';
 
-export function videoTag({
-  accountId,
-  containerId,
-  triggerId,
-}: {
-  accountId: string;
-  containerId: string;
-  triggerId: string;
-}): TagConfig[] {
+export function videoTag(
+  configurationName: string,
+  accountId: string,
+  containerId: string,
+  triggerId: string
+): TagConfig[] {
   return [
     {
       accountId,
@@ -20,132 +24,18 @@ export function videoTag({
       name: 'GA4 Event - Video',
       type: 'gaawe',
       parameter: [
-        {
-          type: 'BOOLEAN',
-          key: 'sendEcommerceData',
-          value: 'false',
-        },
-        {
-          type: 'TEMPLATE',
-          key: 'eventName',
-          value: 'video_{{Video Status}}',
-        },
-        {
-          type: 'LIST',
-          key: 'eventParameters',
-          list: [
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'video_current_time',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video Current Time}}',
-                },
-              ],
-            },
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'video_duration',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video Duration}}',
-                },
-              ],
-            },
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'video_percent',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video Percent}}',
-                },
-              ],
-            },
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'video_provider',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video Provider}}',
-                },
-              ],
-            },
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'video_title',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video Title}}',
-                },
-              ],
-            },
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'video_url',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video URL}}',
-                },
-              ],
-            },
-            {
-              type: 'MAP',
-              map: [
-                {
-                  type: 'TEMPLATE',
-                  key: 'name',
-                  value: 'visible',
-                },
-                {
-                  type: 'TEMPLATE',
-                  key: 'value',
-                  value: '{{Video Visible}}',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'TAG_REFERENCE',
-          key: 'measurementId',
-          value: 'GA4 Configuration',
-        },
+        createBooleanParameter('sendEcommerceData', 'false'),
+        createTemplateParameter('eventName', 'video_{{Video Status}}'),
+        createBuiltInListParameter('eventParameters', [
+          createMapParameter('video_current_time', '{{Video Current Time}}'),
+          createMapParameter('video_duration', '{{Video Duration}}'),
+          createMapParameter('video_percent', '{{Video Percent}}'),
+          createMapParameter('video_provider', '{{Video Provider}}'),
+          createMapParameter('video_title', '{{Video Title}}'),
+          createMapParameter('video_url', '{{Video URL}}'),
+          createMapParameter('visible', '{{Video Visible}}'),
+        ]),
+        createTagReferenceParameter('measurementId', configurationName),
       ],
       fingerprint: '1690374452646',
       firingTriggerId: [triggerId],
@@ -156,16 +46,11 @@ export function videoTag({
       name: 'cHTML - Youtube iframe API script',
       type: 'html',
       parameter: [
-        {
-          type: 'TEMPLATE',
-          key: 'html',
-          value: '<script src="https://www.youtube.com/iframe_api">\n',
-        },
-        {
-          type: 'BOOLEAN',
-          key: 'supportDocumentWrite',
-          value: 'false',
-        },
+        createTemplateParameter(
+          'html',
+          '<script src="https://www.youtube.com/iframe_api">\n'
+        ),
+        createBooleanParameter('supportDocumentWrite', 'false'),
       ],
       fingerprint: '1689848944995',
       firingTriggerId: [triggerId],
@@ -174,6 +59,7 @@ export function videoTag({
 }
 
 export function createVideoTag(
+  configurationName: string,
   accountId: string,
   containerId: string,
   data: Record<string, string>[],
@@ -191,11 +77,12 @@ export function createVideoTag(
       throw new Error("Couldn't find matching trigger for video tag");
     }
 
-    return videoTag({
+    return videoTag(
+      configurationName,
       accountId,
       containerId,
-      triggerId: trigger.triggerId as string,
-    });
+      trigger.triggerId as string
+    );
   } catch (error) {
     console.error('Error while creating video tag:', error);
     // Potentially re-throw the error if it should be handled upstream

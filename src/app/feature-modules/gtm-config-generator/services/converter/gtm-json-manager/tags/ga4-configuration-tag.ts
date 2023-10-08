@@ -1,30 +1,23 @@
 import { TagConfig } from 'src/app/interfaces/gtm-config-generator';
+import {
+  createBooleanParameter,
+  createTemplateParameter,
+} from '../parameter-utils';
 
 export function createGA4Configuration(
+  configurationName: string,
   accountId: string,
   containerId: string
 ): TagConfig {
   return {
-    name: 'GA4 Configuration',
+    name: configurationName,
     type: 'gaawc',
     accountId,
     containerId,
     parameter: [
-      {
-        type: 'BOOLEAN',
-        key: 'sendPageView',
-        value: 'false',
-      },
-      {
-        type: 'BOOLEAN',
-        key: 'enableSendToServerContainer',
-        value: 'false',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'measurementId',
-        value: '{{Custom JS - Measurement ID}}',
-      },
+      createBooleanParameter('sendPageView', 'false'),
+      createBooleanParameter('enableSendToServerContainer', 'false'),
+      createTemplateParameter('measurementId', '{{Measurement ID}}'),
     ],
     firingTriggerId: ['2147479553'],
   };

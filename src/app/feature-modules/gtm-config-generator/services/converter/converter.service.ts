@@ -31,7 +31,7 @@ export class ConverterService {
     this.dataLayerManager = new DataLayerManager();
   }
 
-  convert(gtmConfigGenerator: GtmConfigGenerator) {
+  convert(configurationName: string, gtmConfigGenerator: GtmConfigGenerator) {
     try {
       const specs = this.parseAllSpecs(gtmConfigGenerator.specs);
       const formattedData = specs.map((spec: { [x: string]: any }) => {
@@ -72,6 +72,7 @@ export class ConverterService {
       const dataLayers = this.dataLayerManager.getDataLayers();
 
       return exportGtmJSON(
+        configurationName,
         formattedData,
         gtmConfigGenerator.accountId,
         gtmConfigGenerator.containerId,

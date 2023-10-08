@@ -1,4 +1,9 @@
 import { VariableConfig } from 'src/app/interfaces/gtm-config-generator';
+import {
+  createBooleanParameter,
+  createIntegerParameter,
+  createTemplateParameter,
+} from '../parameter-utils';
 
 export function createVariable(
   accountId: string,
@@ -11,21 +16,9 @@ export function createVariable(
     accountId,
     containerId,
     parameter: [
-      {
-        type: 'INTEGER',
-        key: 'dataLayerVersion',
-        value: '2',
-      },
-      {
-        type: 'BOOLEAN',
-        key: 'setDefaultValue',
-        value: 'false',
-      },
-      {
-        type: 'TEMPLATE',
-        key: 'name',
-        value: dataLayerName,
-      },
+      createIntegerParameter('dataLayerVersion', '2'),
+      createBooleanParameter('setDefaultValue', 'false'),
+      createTemplateParameter('name', dataLayerName),
     ],
   };
 }

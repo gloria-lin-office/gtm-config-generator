@@ -6,8 +6,9 @@
       class="functional-card__actions__item"
       [disabled]="
         !form.valid ||
-        (this.editorService.editor$.inputJson | async)?.state?.doc?.toString()
-          ?.length === 0
+        (
+          this.editorFacadeService.getInputJsonContent() | async
+        )?.state?.doc?.toString()?.length === 0
       "
     >
       Convert
