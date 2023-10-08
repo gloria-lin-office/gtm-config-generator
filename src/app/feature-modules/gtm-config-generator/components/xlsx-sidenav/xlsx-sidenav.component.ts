@@ -11,6 +11,7 @@ import {
   Observable,
   Subject,
   combineLatest,
+  switchMap,
   takeUntil,
   takeWhile,
   tap,
@@ -128,17 +129,18 @@ export class XlsxSidenavComponent implements AfterViewInit, OnDestroy {
       .on('toggleDrawer')
       .pipe(
         takeUntil(this.destroy$),
-        tap(async (file) => {
-          this.toggleSidenav();
-          await this.xlsxFacadeService.loadXlsxFile(file);
-        })
+        tap(() => this.toggleSidenav()),
+        switchMap((file) => this.xlsxFacadeService.loadXlsxFile(file))
       )
       .subscribe();
   }
 
   // facade service handlers
-  switchToSelectedSheet(event: any) {
-    const name = event.target.value;
+  switchToSelectedSheet(event: Event) {
+    if (!event.target) {
+      throw new Error('Event target is undefined');
+    }
+    const name = (event.target as HTMLInputElement).value;
     this.xlsxFacadeService.withWorkbookHandling(
       this.workbook$,
       'switchSheet',
