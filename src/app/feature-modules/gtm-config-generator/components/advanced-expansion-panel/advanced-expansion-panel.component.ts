@@ -1,22 +1,14 @@
 import { Component, ViewEncapsulation, AfterViewInit } from '@angular/core';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
 import { EditorService } from '../../services/editor/editor.service';
 import { tap, combineLatest, Subscription, take } from 'rxjs';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-advanced-expansion-panel',
   standalone: true,
-  imports: [
-    MatExpansionModule,
-    MatFormFieldModule,
-    MatCheckboxModule,
-    FormsModule,
-    ReactiveFormsModule,
-  ],
+  imports: [SharedModule],
   template: `
     <div class="advanced">
       <mat-accordion multi>

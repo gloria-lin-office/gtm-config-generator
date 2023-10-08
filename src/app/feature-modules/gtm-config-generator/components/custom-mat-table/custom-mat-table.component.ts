@@ -1,13 +1,12 @@
 import { Observable } from 'rxjs';
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
 import { XlsxProcessService } from '../../services/xlsx-process/xlsx-process.service';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-custom-mat-table',
   standalone: true,
-  imports: [CommonModule, MatTableModule],
+  imports: [SharedModule],
   template: `
     <ng-container *ngIf="displayedDataSource$ | async as dataSource">
       <table mat-table [dataSource]="dataSource">

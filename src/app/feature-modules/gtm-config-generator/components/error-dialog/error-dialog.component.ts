@@ -1,11 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-error-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [SharedModule],
   template: `<div class="error-dialog">
     <h1 mat-dialog-title>Error</h1>
     <div mat-dialog-content>

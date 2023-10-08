@@ -1,28 +1,15 @@
 import { Component } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
-import { NgIf } from '@angular/common';
 import { EditorService } from '../../services/editor/editor.service';
 import { BehaviorSubject, tap } from 'rxjs';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { EventBusService } from '../../../../services/event-bus/event-bus.service';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-file-upload-dialog',
   standalone: true,
-  imports: [
-    MatDialogModule,
-    MatIconModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    NgIf,
-    MatSidenavModule,
-  ],
+  imports: [SharedModule],
   template: `<div class="file-upload-dialog">
     <mat-dialog-content class="file-upload-dialog__actions">
       <div class="file-upload-dialog__actions__action">

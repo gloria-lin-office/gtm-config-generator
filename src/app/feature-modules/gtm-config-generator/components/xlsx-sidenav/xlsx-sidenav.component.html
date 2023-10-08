@@ -21,7 +21,7 @@
       </div>
       <div>
         <button
-          *ngIf="!(xlsxProcessService.getIsPreviewing() | async)"
+          *ngIf="!(xlsxFacadeService.getIsPreviewing() | async)"
           mat-raised-button
           (click)="sidenav.toggle(); onAction('save')"
           color="primary"
@@ -29,7 +29,7 @@
           Save
         </button>
         <button
-          *ngIf="xlsxProcessService.getIsPreviewing() | async"
+          *ngIf="xlsxFacadeService.getIsPreviewing() | async"
           mat-raised-button
           (click)="onAction('preview')"
           color="warn"
@@ -83,7 +83,7 @@
               </form>
             </mat-card-content>
           </mat-card>
-          <ng-container *ngIf="!(xlsxProcessService.getIsPreviewing() | async)">
+          <ng-container *ngIf="!(xlsxFacadeService.getIsPreviewing() | async)">
             <mat-card
               class="mat-elevation-z8 xlsx-sidenav__sidenav__content__cards__card"
             >

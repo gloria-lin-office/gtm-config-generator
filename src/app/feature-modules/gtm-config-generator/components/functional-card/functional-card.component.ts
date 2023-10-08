@@ -1,51 +1,27 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import { ConverterService } from '../../services/converter/converter.service';
 import { EditorService } from '../../services/editor/editor.service';
 import { Subscription, combineLatest, tap } from 'rxjs';
-import {
-  FormControl,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { FormControl, Validators } from '@angular/forms';
 import { MeasurementIdTableComponent } from '../measurement-id-table/measurement-id-table.component';
-import { OverlayModule } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
 import { GtmConfigGenerator } from 'src/app/interfaces/gtm-config-generator';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { containerName, gtmId, tagManagerUrl } from './test-data';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
 import { EditorView } from 'codemirror';
 import { extractAccountAndContainerId, preprocessInput } from './utilities';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-functional-card',
   standalone: true,
   imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatTooltipModule,
-    OverlayModule,
+    SharedModule,
     MeasurementIdTableComponent,
-    MatCheckboxModule,
-    MatDialogModule,
     AdvancedExpansionPanelComponent,
   ],
   templateUrl: './functional-card.component.html',

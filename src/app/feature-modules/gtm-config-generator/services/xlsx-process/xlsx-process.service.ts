@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { map, tap } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { Subject, map, shareReplay, take, takeUntil, tap } from 'rxjs';
 import { WebWorkerService } from 'src/app/services/web-worker/web-worker.service';
 import { WorkbookService } from '../workbook/workbook.service';
 import { XlsxDisplayService } from '../xlsx-display/xlsx-display.service';
@@ -8,7 +8,7 @@ import { FileService } from '../file/file.service';
 @Injectable({
   providedIn: 'root',
 })
-export class XlsxProcessService {
+export class XlsxProcessService implements OnDestroy {
   workbook$ = this.workbookService.workbook$;
   worksheetNames$ = this.workbookService.worksheetNames$;
   fileName$ = this.workbookService.fileName$;
@@ -17,7 +17,7 @@ export class XlsxProcessService {
   displayedColumns$ = this.xlsxDisplayService.displayedColumns$;
   isRenderingJson$ = this.xlsxDisplayService.isRenderingJson$;
   isPreviewing$ = this.xlsxDisplayService.isPreviewing$;
-
+  private destroy$ = new Subject<void>();
   constructor(
     private webWorkerService: WebWorkerService,
     private workbookService: WorkbookService,
@@ -56,7 +56,8 @@ export class XlsxProcessService {
           } else if (data.action === 'extractSpecs') {
             this.xlsxDisplayService.processAndSetSpecsContent(data.jsonData);
           }
-        })
+        }),
+        takeUntil(this.destroy$) // automatically unsubscribe
       )
       .subscribe();
   }
@@ -65,7 +66,8 @@ export class XlsxProcessService {
     return this.dataSource$.pipe(
       map((data) => {
         return data.length;
-      })
+      }),
+      shareReplay(1) // cache the last emitted value
     );
   }
 
@@ -74,7 +76,8 @@ export class XlsxProcessService {
       map((data) => {
         // note the reason for -1 is because the last row is the failure events as an array
         return data.length - 1;
-      })
+      }),
+      shareReplay(1) // cache the last emitted value
     );
   }
 
@@ -97,5 +100,10 @@ export class XlsxProcessService {
   resetAllData() {
     this.workbookService.resetWorkbookData();
     this.xlsxDisplayService.resetDisplayData();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
