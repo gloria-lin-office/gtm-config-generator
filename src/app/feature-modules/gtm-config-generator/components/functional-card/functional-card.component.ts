@@ -61,7 +61,7 @@ export class FunctionalCardComponent implements OnDestroy {
 
   // TODO: enable configurationName to be passed in
   performConversion(json: any) {
-    this.editorFacadeService.setInputJsonContent(json);
+    this.editorFacadeService.setInputJsonContent(JSON.parse(json));
     const gtmConfigGenerator = this.generateGtmConfig(json);
     const result = this.converterService.convert(
       'GA4 Configuration Tag',
