@@ -30,9 +30,9 @@ import { EditorFacadeService } from '../../services/editor-facade/editor-faced.s
 export class FunctionalCardComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
   form = this.fb.group({
-    tagManagerUrl: [tagManagerUrl, Validators.required],
-    containerName: [containerName, Validators.required],
-    gtmId: [gtmId, Validators.required],
+    tagManagerUrl: ['', Validators.required],
+    containerName: ['', Validators.required],
+    gtmId: ['', Validators.required],
   });
 
   constructor(
