@@ -5,6 +5,7 @@ import { EditorService } from '../../services/editor/editor.service';
 import { BehaviorSubject, tap } from 'rxjs';
 import { EventBusService } from '../../../../services/event-bus/event-bus.service';
 import { SharedModule } from '../../shared.module';
+import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
 
 @Component({
   selector: 'app-file-upload-dialog',
@@ -65,8 +66,8 @@ import { SharedModule } from '../../shared.module';
 export class FileUploadDialogComponent {
   constructor(
     public dialog: MatDialog,
-    private editorService: EditorService,
-    private eventBusService: EventBusService
+    private eventBusService: EventBusService,
+    private editorFacadeService: EditorFacadeService
   ) {}
 
   selectedFile: File | null = null;
@@ -145,10 +146,7 @@ export class FileUploadDialogComponent {
       .pipe(
         tap((data) => {
           if (data !== null || data !== undefined) {
-            this.editorService.setContent(
-              'inputJson',
-              JSON.stringify(data, null, 2)
-            );
+            this.editorFacadeService.setInputJsonContent(data);
             this.dialog.closeAll();
           }
         })

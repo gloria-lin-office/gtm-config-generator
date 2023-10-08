@@ -1,7 +1,6 @@
 import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ConverterService } from '../../services/converter/converter.service';
-import { EditorService } from '../../services/editor/editor.service';
-import { Subscription, combineLatest, tap } from 'rxjs';
+import { Subject, combineLatest, takeUntil, tap } from 'rxjs';
 import { FormControl, Validators } from '@angular/forms';
 import { MeasurementIdTableComponent } from '../measurement-id-table/measurement-id-table.component';
 import { FormBuilder } from '@angular/forms';
@@ -12,9 +11,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
-import { EditorView } from 'codemirror';
 import { extractAccountAndContainerId, preprocessInput } from './utilities';
 import { SharedModule } from '../../shared.module';
+import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
 
 @Component({
   selector: 'app-functional-card',
@@ -29,9 +28,7 @@ import { SharedModule } from '../../shared.module';
   encapsulation: ViewEncapsulation.None,
 })
 export class FunctionalCardComponent implements OnDestroy {
-  private subscriptions: Subscription[] = [];
-  // TODO: precise validation. For example, the tag manager url should be a valid url
-  // gtmId should be a valid gtm id, such as GTM-XXXXXX
+  private destroy$ = new Subject<void>();
   form = this.fb.group({
     tagManagerUrl: [tagManagerUrl, Validators.required],
     containerName: [containerName, Validators.required],
@@ -40,17 +37,19 @@ export class FunctionalCardComponent implements OnDestroy {
 
   constructor(
     private converterService: ConverterService,
-    public editorService: EditorService,
     private fb: FormBuilder,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private editorFacadeService: EditorFacadeService
   ) {}
 
   convertCode() {
-    const sub = combineLatest([this.editorService.editor$.inputJson])
+    combineLatest([this.editorFacadeService.getInputJsonContent()])
       .pipe(
-        tap(([jsonEditor]) => {
+        takeUntil(this.destroy$),
+        tap(([inputJsonEditor]) => {
           try {
-            this.performConversion(jsonEditor);
+            const json = preprocessInput(inputJsonEditor.state.doc.toString());
+            this.performConversion(json);
           } catch (error) {
             this.openDialog(error);
             console.error(error);
@@ -58,29 +57,17 @@ export class FunctionalCardComponent implements OnDestroy {
         })
       )
       .subscribe();
-    this.subscriptions.push(sub);
   }
 
-  performConversion(jsonEditor: EditorView) {
-    // 1) get the json from the editor
-    const json = preprocessInput(jsonEditor.state.doc.toString());
-
-    // 2) preprocess and set the json to the editor, fixing potential syntax errors
-    this.editorService.setContent(
-      'inputJson',
-      JSON.stringify(JSON.parse(json), null, 2)
-    );
-    // 3) convert the json to gtm config
+  performConversion(json: any) {
+    this.editorFacadeService.setInputJsonContent(json);
     const gtmConfigGenerator = this.generateGtmConfig(json);
     const result = this.converterService.convert(gtmConfigGenerator);
     this.postConversion(result);
   }
 
   postConversion(result: any) {
-    this.editorService.setContent(
-      'outputJson',
-      JSON.stringify(result, null, 2)
-    );
+    this.editorFacadeService.setOutputJsonContent(result);
     this.openSuccessConversionDialog(result);
 
     window.dataLayer.push({
@@ -117,7 +104,6 @@ export class FunctionalCardComponent implements OnDestroy {
   }
 
   openDialog(data: any) {
-    // console.log('error message', data.message);
     this.dialog.open(ErrorDialogComponent, {
       data: {
         message: data.message,
@@ -148,6 +134,7 @@ export class FunctionalCardComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

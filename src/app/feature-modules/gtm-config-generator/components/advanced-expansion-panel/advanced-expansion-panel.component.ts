@@ -1,9 +1,11 @@
 import { Component, ViewEncapsulation, AfterViewInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
-import { EditorService } from '../../services/editor/editor.service';
-import { tap, combineLatest, Subscription, take } from 'rxjs';
+import { tap, combineLatest, take, Subject, takeUntil } from 'rxjs';
 import { SharedModule } from '../../shared.module';
+import { Dialog } from '@angular/cdk/dialog';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
 
 @Component({
   selector: 'app-advanced-expansion-panel',
@@ -72,36 +74,43 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
     includeVideoTag: [false],
     includeScrollTag: [false],
   });
-  private subscriptions: Subscription[] = [];
+  private destroy$ = new Subject<void>();
 
-  constructor(private fb: FormBuilder, private editorService: EditorService) {}
+  constructor(
+    private fb: FormBuilder,
+    private dialog: Dialog,
+    private editorFacadeService: EditorFacadeService
+  ) {}
 
   ngAfterViewInit() {
     this.onFormChange();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onFormChange() {
-    const formUpdateSubscription = combineLatest([
-      this.editorService.editor$.inputJson,
+    combineLatest([
+      this.editorFacadeService.getInputJsonContent(),
       this.form.valueChanges,
     ])
       .pipe(
+        takeUntil(this.destroy$),
         tap(([editor, form]) => {
           this.handleEditorAndFormChanges(editor, form);
         })
       )
       .subscribe();
-    this.subscriptions.push(formUpdateSubscription);
   }
 
   onPanelOpened() {
-    const panelUpdateSubscription = this.editorService.editor$.inputJson
+    this.editorFacadeService
+      .getInputJsonContent()
       .pipe(
         take(1),
+        takeUntil(this.destroy$),
         tap((editor) => {
           const jsonString = editor?.state?.doc?.toString();
 
@@ -128,24 +137,31 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
         })
       )
       .subscribe();
-    this.subscriptions.push(panelUpdateSubscription);
   }
 
   handleEditorAndFormChanges(editor: any, form: any) {
     if (!editor.state.doc.toString()) return;
 
-    const jsonString = editor.state.doc.toString();
-    const json = JSON.parse(jsonString);
+    try {
+      const jsonString = editor.state.doc.toString();
+      const json = JSON.parse(jsonString);
 
-    this.updateJsonForEvents(json, form.includeVideoTag, [
-      'video_start',
-      'video_progress',
-      'video_completion',
-    ]);
+      this.updateJsonForEvents(json, form.includeVideoTag, [
+        'video_start',
+        'video_progress',
+        'video_completion',
+      ]);
 
-    this.updateJsonForEvents(json, form.includeScrollTag, ['scroll']);
-
-    this.editorService.setContent('inputJson', JSON.stringify(json, null, 2));
+      this.updateJsonForEvents(json, form.includeScrollTag, ['scroll']);
+      this.editorFacadeService.setInputJsonContent(json);
+    } catch (error) {
+      this.dialog.open(ErrorDialogComponent, {
+        data: {
+          title: 'Error',
+          content: 'Please check your JSON syntax.',
+        },
+      });
+    }
   }
 
   private updateJsonForEvents(
