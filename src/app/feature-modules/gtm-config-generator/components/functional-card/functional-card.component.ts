@@ -1,4 +1,9 @@
-import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ConverterService } from '../../services/converter/converter.service';
 import { Subject, combineLatest, takeUntil, tap } from 'rxjs';
 import { FormControl, Validators } from '@angular/forms';
@@ -14,6 +19,7 @@ import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/adv
 import { extractAccountAndContainerId, preprocessInput } from './utilities';
 import { SharedModule } from '../../shared.module';
 import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
+import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
 
 @Component({
   selector: 'app-functional-card',
@@ -35,21 +41,28 @@ export class FunctionalCardComponent implements OnDestroy {
     gtmId: ['', Validators.required],
   });
 
+  @ViewChild('setupAccordion') setupAccordion!: AdvancedExpansionPanelComponent;
+
   constructor(
     private converterService: ConverterService,
     private fb: FormBuilder,
     public dialog: MatDialog,
-    public editorFacadeService: EditorFacadeService
+    public editorFacadeService: EditorFacadeService,
+    private setupConstructorService: SetupConstructorService
   ) {}
 
   convertCode() {
-    combineLatest([this.editorFacadeService.getInputJsonContent()])
+    this.setupAccordion.setupPanel.close();
+    combineLatest([
+      this.editorFacadeService.getInputJsonContent(),
+      this.setupConstructorService.getConfigurationName(),
+    ])
       .pipe(
         takeUntil(this.destroy$),
-        tap(([inputJsonEditor]) => {
+        tap(([inputJsonEditor, configurationName]) => {
           try {
             const json = preprocessInput(inputJsonEditor.state.doc.toString());
-            this.performConversion(json);
+            this.performConversion(json, configurationName);
           } catch (error) {
             this.openDialog(error);
             console.error(error);
@@ -59,12 +72,11 @@ export class FunctionalCardComponent implements OnDestroy {
       .subscribe();
   }
 
-  // TODO: enable configurationName to be passed in
-  performConversion(json: any) {
+  performConversion(json: any, configurationName: string) {
     this.editorFacadeService.setInputJsonContent(JSON.parse(json));
     const gtmConfigGenerator = this.generateGtmConfig(json);
     const result = this.converterService.convert(
-      'GA4 Configuration Tag',
+      configurationName,
       gtmConfigGenerator
     );
     this.postConversion(result);

@@ -1,0 +1,39 @@
+<div class="advanced">
+  <mat-accordion multi>
+    <mat-expansion-panel (opened)="onPanelOpened()" togglePosition="before">
+      <mat-expansion-panel-header [@.disabled]="true">
+        <mat-panel-title> Include Built-in Tags </mat-panel-title>
+      </mat-expansion-panel-header>
+      <section class="advanced__tags">
+        <form [formGroup]="form">
+          <mat-checkbox formControlName="includeVideoTag"
+            >Include Video Tag</mat-checkbox
+          >
+          <mat-checkbox formControlName="includeScrollTag"
+            >Include Scroll Tag</mat-checkbox
+          >
+        </form>
+      </section>
+    </mat-expansion-panel>
+    <mat-expansion-panel
+      togglePosition="before"
+      #setupPanel
+      (opened)="onSetupPanelOpened()"
+      (closed)="onSetupPanelClosed()"
+    >
+      <mat-expansion-panel-header [@.disabled]="true">
+        <mat-panel-title> Configuration Naming</mat-panel-title>
+        <mat-panel-description
+          >By default is GA4 Configuration</mat-panel-description
+        >
+      </mat-expansion-panel-header>
+      <section class="advanced__configuration-name">
+        <form [formGroup]="setupForm">
+          <mat-form-field>
+            <input matInput formControlName="configurationName" />
+          </mat-form-field>
+        </form>
+      </section>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>
