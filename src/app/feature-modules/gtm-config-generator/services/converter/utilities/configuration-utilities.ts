@@ -77,14 +77,12 @@ export function exportGtmJSON(
   gtmId: string,
   tags: Tag[],
   dataLayers: string[],
-  triggers: Trigger[],
-  measurementIdCustomJS: string
+  triggers: Trigger[]
 ) {
   const _variable = variableManager.getVariables(
     accountId,
     containerId,
-    dataLayers,
-    measurementIdCustomJS
+    dataLayers
   );
   const _triggers = getTriggers(accountId, containerId, data, triggers);
   const _tags = tagManager.getAllTags(

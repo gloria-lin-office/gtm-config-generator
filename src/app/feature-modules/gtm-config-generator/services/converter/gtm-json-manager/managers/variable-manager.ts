@@ -1,7 +1,7 @@
 import { VariableConfig } from '../../../../../../interfaces/gtm-config-generator';
 import { isIncludeScroll, isIncludeVideo } from '../../utilities/event-utils';
 import { createVariable } from '../variables/data-layer-variable';
-import { createMeasurementIdCJS } from '../variables/measurement-id-variable';
+import { createRegexMeasurementIdVariable } from '../variables/regex-measurement-id-variable';
 import { scrollBuiltInVariable } from '../variables/scroll-variable';
 import { videoBuiltInVariable } from '../variables/video-variable';
 
@@ -24,20 +24,18 @@ export class VariableManger {
   getVariables(
     accountId: string,
     containerId: string,
-    dataLayers: string[],
-    measurementIdCustomJS: string
+    dataLayers: string[]
   ): VariableConfig[] {
     const variables = dataLayers.map((dL, i) => {
       return createVariable(accountId, containerId, dL);
     });
 
-    // TODO: use regex table
-    const measurementIdVariable = createMeasurementIdCJS(
+    const regexMeasurementIdVariable = createRegexMeasurementIdVariable(
       accountId,
-      containerId,
-      measurementIdCustomJS
+      containerId
     );
-    variables.push(measurementIdVariable);
+
+    variables.push(regexMeasurementIdVariable);
 
     return variables.map((data, index) => ({
       ...data,

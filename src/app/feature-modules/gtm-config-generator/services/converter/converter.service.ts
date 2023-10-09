@@ -9,7 +9,6 @@ import {
 import { formatSingleEventParameters } from './utilities/parameter-formatting-utils';
 import { TagManager } from './gtm-json-manager/managers/tag-manager';
 import { TriggerManager } from './gtm-json-manager/managers/trigger-manager';
-import { createMeasurementIdCustomJSVariable } from './gtm-json-manager/variables/cjs-measurement-id-variable';
 import { getAllObjectPaths } from './utilities/object-path-utils';
 
 @Injectable({
@@ -66,9 +65,6 @@ export class ConverterService {
       // get all necesssary data for export
       const triggers = this.triggerManager.getTriggers();
       const tags = this.tagManager.getTags();
-      const measurementIdCustomJS = createMeasurementIdCustomJSVariable(
-        measurementIdSettings
-      );
       const dataLayers = this.dataLayerManager.getDataLayers();
 
       return exportGtmJSON(
@@ -80,8 +76,7 @@ export class ConverterService {
         gtmConfigGenerator.gtmId,
         tags,
         dataLayers,
-        triggers,
-        measurementIdCustomJS
+        triggers
       );
     } catch (error) {
       console.error('error: ', error);

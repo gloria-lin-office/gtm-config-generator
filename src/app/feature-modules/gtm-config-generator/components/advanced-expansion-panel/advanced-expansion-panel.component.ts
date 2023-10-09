@@ -149,11 +149,6 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
     );
   }
 
-  onSetupPanelOpened() {
-    // will have a placeholder to be saved
-    this.saveConfigurationName();
-  }
-
   onSetupPanelClosed() {
     if (!this.setupForm.value.configurationName) {
       this.dialog.open(ErrorDialogComponent, {

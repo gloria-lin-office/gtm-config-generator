@@ -60,6 +60,7 @@ export interface VariableConfig {
   parameter?: Parameter[];
   formatValue?: {};
   variableId?: string;
+  fingerprint?: string;
 }
 
 export interface GtmConfigGenerator {
