@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { GtmConfigGeneratorRoutingModule } from './gtm-config-generator-routing.module';
 import { MainPageComponent } from './components/main-page/main-page.component';
 import { EditorComponent } from './components/editor/editor.component';
@@ -15,7 +14,6 @@ import { AdvancedExpansionPanelComponent } from './components/advanced-expansion
 
 @NgModule({
   imports: [
-    CommonModule,
     GtmConfigGeneratorRoutingModule,
     MainPageComponent,
     EditorComponent,

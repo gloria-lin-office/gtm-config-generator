@@ -4,7 +4,7 @@ import { FunctionalCardComponent } from '../functional-card/functional-card.comp
 import { ArticleComponent } from '../article/article.component';
 import { FooterComponent } from '../footer/footer.component';
 import { XlsxSidenavComponent } from '../xlsx-sidenav/xlsx-sidenav.component';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 
 @Component({
   selector: 'app-main-page',

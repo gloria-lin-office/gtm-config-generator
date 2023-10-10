@@ -23,7 +23,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { ProgressSpinnerComponent } from '../progress-spinner/progress-spinner.component';
 import { CustomMatTableComponent } from '../custom-mat-table/custom-mat-table.component';
 import { XlsxProcessFacade } from '../../services/xlsx-facade/xlsx-facade.service';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 
 @Component({
   selector: 'app-xlsx-sidenav-form',

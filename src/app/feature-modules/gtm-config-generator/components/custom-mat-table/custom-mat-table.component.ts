@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { Component, Input } from '@angular/core';
 import { XlsxProcessService } from '../../services/xlsx-process/xlsx-process.service';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 
 @Component({
   selector: 'app-custom-mat-table',

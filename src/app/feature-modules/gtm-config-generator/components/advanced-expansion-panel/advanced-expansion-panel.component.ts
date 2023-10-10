@@ -7,7 +7,7 @@ import {
 import { FormGroup } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
 import { tap, combineLatest, take, Subject, takeUntil } from 'rxjs';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
