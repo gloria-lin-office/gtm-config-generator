@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
-import { EditorService } from '../../services/editor/editor.service';
 import { BehaviorSubject, tap } from 'rxjs';
 import { EventBusService } from '../../../../services/event-bus/event-bus.service';
 import { SharedModule } from '../../shared.module';
-import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
+import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
 
 @Component({
   selector: 'app-file-upload-dialog',

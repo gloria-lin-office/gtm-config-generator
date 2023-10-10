@@ -15,6 +15,7 @@ export class XlsxProcessService implements OnDestroy {
   dataSource$ = this.xlsxDisplayService.dataSource$;
   displayedDataSource$ = this.xlsxDisplayService.displayedDataSource$;
   displayedColumns$ = this.xlsxDisplayService.displayedColumns$;
+  displayedFailedEvents$ = this.xlsxDisplayService.displayedFailedEvents$;
   isRenderingJson$ = this.xlsxDisplayService.isRenderingJson$;
   isPreviewing$ = this.xlsxDisplayService.isPreviewing$;
   private destroy$ = new Subject<void>();
@@ -74,8 +75,7 @@ export class XlsxProcessService implements OnDestroy {
   getNumParsedEvents() {
     return this.displayedDataSource$.pipe(
       map((data) => {
-        // note the reason for -1 is because the last row is the failure events as an array
-        return data.length - 1;
+        return data.length;
       }),
       shareReplay(1) // cache the last emitted value
     );
@@ -95,6 +95,10 @@ export class XlsxProcessService implements OnDestroy {
 
   setIsPreviewing(isPreviewing: boolean) {
     this.xlsxDisplayService.setIsPreviewing(isPreviewing);
+  }
+
+  getDisplayedFailedEvents() {
+    return this.displayedFailedEvents$.asObservable();
   }
 
   resetAllData() {

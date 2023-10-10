@@ -11,6 +11,7 @@ import {
   Observable,
   Subject,
   combineLatest,
+  map,
   switchMap,
   takeUntil,
   takeWhile,
@@ -47,6 +48,12 @@ export class XlsxSidenavComponent implements AfterViewInit, OnDestroy {
   displayedColumns$ = this.xlsxFacadeService.displayedColumns$ as Observable<
     string[]
   >;
+
+  displayedFailedColumns = ['failedEvents'];
+  displayedFailedEvents$ = this.xlsxFacadeService.displayedFailedEvents$;
+  hasProcessedFailedEvents$ = this.displayedFailedEvents$.pipe(
+    map((events) => events.length > 0)
+  );
   private destroy$ = new Subject<void>();
 
   file: File | undefined;
@@ -155,6 +162,6 @@ export class XlsxSidenavComponent implements AfterViewInit, OnDestroy {
 
   // getters
   get dataColumnName() {
-    return this.form.get('dataColumnName');
+    return this.form.controls.dataColumnName;
   }
 }

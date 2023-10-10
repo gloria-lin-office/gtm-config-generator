@@ -5,7 +5,7 @@ import {
   filterGtmSpecsFromData,
   filterNonEmptyData,
   unfixedableJsonString,
-} from '../../components/xlsx-sidenav/xlsx-helper';
+} from '../xlsx-facade/xlsx-helper';
 import { EditorService } from '../editor/editor.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../../components/error-dialog/error-dialog.component';
@@ -18,6 +18,7 @@ export class XlsxDisplayService {
   dataSource$ = new BehaviorSubject<any[]>([]);
   displayedDataSource$ = new BehaviorSubject<any[]>([]);
   displayedColumns$ = new BehaviorSubject<string[]>([]);
+  displayedFailedEvents$ = new BehaviorSubject<any[]>([]);
   isRenderingJson$ = new BehaviorSubject<boolean>(false);
   isPreviewing$ = new BehaviorSubject<boolean>(true);
 
@@ -42,25 +43,23 @@ export class XlsxDisplayService {
 
   handlePreviewDataAction(data: any) {
     const events = this.processSpecs(data.jsonData);
-    const parsedFailureEvents = unfixedableJsonString;
+    const failedEvents: any[] = [];
+    const combinedData = events
+      .map((event: any) => {
+        return {
+          Spec: JSON.parse(JSON.stringify(event, null, 2)),
+        };
+      })
+      .filter((event: any) => event.Spec.event !== null);
 
-    const combinedData = events.map((event: any) => {
-      return {
-        Spec: JSON.parse(JSON.stringify(event, null, 2)),
-        FailureEvent: null, // No failure here
-      };
+    unfixedableJsonString.forEach((jsonString) => {
+      failedEvents.push({
+        failedEvents: jsonString,
+      });
     });
-
-    // Include your parsedFailureEvents here
-    combinedData.push({
-      Spec: null, // No spec here
-      FailureEvent: parsedFailureEvents as any,
-    });
-
+    this.displayedFailedEvents$.next(failedEvents);
     this.displayedDataSource$.next(combinedData);
-    this.displayedColumns$.next(['Spec', 'FailureEvent']);
-
-    console.log(this.displayedDataSource$.getValue());
+    this.displayedColumns$.next(['Spec']);
 
     if (this.displayedDataSource$.getValue()[0].Spec === null) {
       this.dialog.open(ErrorDialogComponent, {
@@ -103,6 +102,7 @@ export class XlsxDisplayService {
     this.displayedColumns$.next([]);
     this.isRenderingJson$.next(false);
     this.isPreviewing$.next(true);
+    this.displayedFailedEvents$.next([]);
   }
 
   setIsRenderingJson(isRenderingJson: boolean) {

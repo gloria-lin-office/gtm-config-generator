@@ -26,8 +26,8 @@ enum ProgressSpinnerColor {
       <div class="progress__description">
         <p>
           This progress bar shows the number of successfully parsed events.
-          Please refer to the bottom of the page for the list of the
-          failed-to-parse tags.
+          Failed events are listed at the bottom. Otherwise, the raw data might
+          be irrelevent to specs.
         </p>
       </div>
     </div>

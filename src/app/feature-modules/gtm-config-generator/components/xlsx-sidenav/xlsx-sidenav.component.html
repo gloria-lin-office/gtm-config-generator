@@ -97,25 +97,49 @@
           </ng-container>
         </div>
 
-        <mat-card class="xlsx-sidenav__sidenav__cards">
-          <div>
-            <mat-card-content
-              #scrollContainer
-              id="scrollContainer"
-              style="
-                overflow: scroll;
-                min-height: 30vh;
-                height: auto;
-                max-height: 50vh;
-              "
-            >
-              <app-custom-mat-table
-                [displayedColumns$]="displayedColumns$"
-                [displayedDataSource$]="displayedDataSource$"
-              ></app-custom-mat-table>
-            </mat-card-content>
-          </div>
-        </mat-card>
+        <div style="display: flex; flex-direction: column; gap: 2rem">
+          <mat-card>
+            <div>
+              <mat-card-content
+                #scrollContainer
+                id="scrollContainer"
+                style="
+                  overflow: scroll;
+                  min-height: 30vh;
+                  height: auto;
+                  max-height: 50vh;
+                "
+              >
+                <app-custom-mat-table
+                  [displayedColumns$]="displayedColumns$"
+                  [displayedDataSource$]="displayedDataSource$"
+                ></app-custom-mat-table>
+              </mat-card-content>
+            </div>
+          </mat-card>
+          <ng-container *ngIf="hasProcessedFailedEvents$ | async">
+            <mat-card *ngIf="displayedFailedEvents$ | async as dataSource">
+              <mat-card-content>
+                <table mat-table [dataSource]="dataSource">
+                  <ng-container matColumnDef="failedEvents">
+                    <th mat-header-cell *matHeaderCellDef>Failed Events</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{ element["failedEvents"] }}
+                    </td>
+                  </ng-container>
+                  <tr
+                    mat-header-row
+                    *matHeaderRowDef="displayedFailedColumns"
+                  ></tr>
+                  <tr
+                    mat-row
+                    *matRowDef="let row; columns: displayedFailedColumns"
+                  ></tr>
+                </table>
+              </mat-card-content>
+            </mat-card>
+          </ng-container>
+        </div>
       </mat-sidenav-content>
     </ng-template>
   </mat-sidenav>

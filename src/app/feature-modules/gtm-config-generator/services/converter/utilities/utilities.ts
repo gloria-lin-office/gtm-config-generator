@@ -1,4 +1,4 @@
-import { fixJsonString } from '../../services/converter/utilities/json-string-utils';
+import { fixJsonString } from './json-string-utils';
 
 export function preprocessInput(inputString: string) {
   try {
