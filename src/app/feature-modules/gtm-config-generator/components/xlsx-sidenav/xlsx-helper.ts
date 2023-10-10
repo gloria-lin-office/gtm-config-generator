@@ -1,7 +1,7 @@
 import { DataRow } from '../../../../interfaces/gtm-config-generator';
 import { fixJsonString } from '../../services/converter/utilities/json-string-utils';
 
-export const unfixedableJsonString: string[] = [];
+export const unfixedableJsonString: Set<string> = new Set();
 
 export function filterGtmSpecsFromData(data: DataRow[]) {
   return data
@@ -41,7 +41,7 @@ export function convertSpecStringToObject(spec: DataRow): any {
       return JSON.parse(fixJsonString(jsonString));
     } catch (nestedError) {
       console.error('Failed to parse:', jsonString, nestedError);
-      unfixedableJsonString.push(jsonString);
+      unfixedableJsonString.add(jsonString);
       return null;
     }
   }

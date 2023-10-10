@@ -17,6 +17,7 @@ export class XlsxProcessFacade {
   dataSource$ = this.xlsxProcessService.dataSource$;
   displayedDataSource$ = this.xlsxProcessService.displayedDataSource$;
   displayedColumns$ = this.xlsxProcessService.displayedColumns$;
+  displayedFailedEvents$ = this.xlsxProcessService.getDisplayedFailedEvents();
   isRenderingJson$ = this.xlsxProcessService.getIsRenderingJson();
   isPreviewing$ = this.xlsxProcessService.getIsPreviewing();
 
