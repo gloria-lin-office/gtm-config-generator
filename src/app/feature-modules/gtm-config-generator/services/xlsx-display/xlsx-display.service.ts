@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import {
   convertSpecStringToObject,
   filterGtmSpecsFromData,
@@ -58,18 +58,8 @@ export class XlsxDisplayService {
       });
     });
     this.displayedFailedEvents$.next(failedEvents);
-    // Include your parsedFailureEvents here
-    // combinedData.push({
-    //   Spec: null, // No spec here
-    //   FailureEvent: failedEvents as any,
-    // });
-
     this.displayedDataSource$.next(combinedData);
-    // TODO: separate the failed events into a separate view
-    // this.displayedColumns$.next(['Spec', 'FailureEvent']);
     this.displayedColumns$.next(['Spec']);
-
-    // console.log(this.displayedDataSource$.getValue());
 
     if (this.displayedDataSource$.getValue()[0].Spec === null) {
       this.dialog.open(ErrorDialogComponent, {
