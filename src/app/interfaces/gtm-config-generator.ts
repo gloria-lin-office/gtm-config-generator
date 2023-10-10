@@ -2,22 +2,16 @@ export interface NestedObject {
   [key: string]: any;
 }
 
-interface ParameterMap {
+export interface ParameterMap {
   type: string;
-  key: string;
-  value: string;
-}
-
-interface ParameterList {
-  type: string;
-  map: ParameterMap[];
+  map: Parameter[];
 }
 
 export interface Parameter {
   type: string;
   key: string;
   value?: string;
-  list?: ParameterList[];
+  list?: ParameterMap[];
 }
 
 export interface CustomEventFilter {
@@ -66,6 +60,7 @@ export interface VariableConfig {
   parameter?: Parameter[];
   formatValue?: {};
   variableId?: string;
+  fingerprint?: string;
 }
 
 export interface GtmConfigGenerator {
@@ -74,10 +69,6 @@ export interface GtmConfigGenerator {
   containerName: string;
   gtmId: string;
   specs: string;
-  stagingUrl?: string;
-  stagingMeasurementId?: string;
-  productionUrl?: string;
-  productionMeasurementId?: string;
 }
 
 export interface DataRow {

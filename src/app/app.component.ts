@@ -1,12 +1,61 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [RouterModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'gtm-config-generator';
+  constructor(private metaService: Meta) {}
+
+  ngOnInit(): void {
+    this.addMetaTags();
+  }
+
+  addMetaTags(): void {
+    this.metaService.addTags([
+      {
+        name: 'description',
+        content:
+          'Automate your GTM configuration process effortlessly with our GTM Config Generator, ensuring accurate and optimized JSON file creation. Ideal for digital marketers and SEO experts, our tool streamlines tag management, reducing errors and enhancing productivity by focusing on data analysis over technicalities.',
+      },
+      {
+        name: 'keywords',
+        content:
+          'GTM, Config Generator, JSON, SEO, Digital Marketing, Web Development, Tag Management, Data Analysis, Productivity, Optimization',
+      },
+      {
+        property: 'og:title',
+        content:
+          'Effortless GTM Configuration and Management with Our JSON Generator Tool',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Automate your GTM configuration process effortlessly with our GTM Config Generator, ensuring accurate and optimized JSON file creation. Ideal for digital marketers and SEO experts, our tool streamlines tag management, reducing errors and enhancing productivity by focusing on data analysis over technicalities.',
+      },
+      {
+        property: 'og:url',
+        content: 'https://gtm-config-generator.netlify.app/',
+      },
+      { property: 'og:type', content: 'website' },
+      {
+        property: 'twitter:title',
+        content:
+          'Effortless GTM Configuration and Management with Our JSON Generator Tool',
+      },
+      {
+        property: 'twitter:description',
+        content:
+          'Automate your GTM configuration process effortlessly with our GTM Config Generator, ensuring accurate and optimized JSON file creation. Ideal for digital marketers and SEO experts, our tool streamlines tag management, reducing errors and enhancing productivity by focusing on data analysis over technicalities.',
+      },
+    ]);
+  }
 }
 
 if (typeof Worker !== 'undefined') {

@@ -4,11 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --optimization --build-optimizer --aot --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
   "private": true,
+  "sideEffects": false,
   "dependencies": {
     "@angular/animations": "^16.1.0",
     "@angular/cdk": "^16.1.5",
