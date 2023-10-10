@@ -1,11 +1,9 @@
 import { Routes } from '@angular/router';
+import { MainPageComponent } from './components/main-page/main-page.component';
 
 export const appRoutes: Routes = [
   {
     path: '',
-    loadChildren: () =>
-      import(
-        './feature-modules/gtm-config-generator/gtm-config-generator.module'
-      ).then((m) => m.GtmConfigGeneratorModule),
+    component: MainPageComponent,
   },
 ];

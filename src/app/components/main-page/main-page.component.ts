@@ -1,14 +1,25 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BarComponent } from '../bar/bar.component';
-import { HeaderComponent } from '../header/header.component';
-import { ProjectListComponent } from '../project-list/project-list.component';
+import { EditorComponent } from '../editor/editor.component';
+import { FunctionalCardComponent } from '../functional-card/functional-card.component';
+import { ArticleComponent } from '../article/article.component';
+import { FooterComponent } from '../footer/footer.component';
+import { XlsxSidenavComponent } from '../xlsx-sidenav/xlsx-sidenav.component';
+import { SharedModule } from '../../shared.module';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
+  imports: [
+    SharedModule,
+    EditorComponent,
+    FunctionalCardComponent,
+    ArticleComponent,
+    FooterComponent,
+    XlsxSidenavComponent,
+  ],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],
-  imports: [CommonModule, BarComponent, HeaderComponent, ProjectListComponent],
 })
-export class MainPageComponent {}
+export class MainPageComponent {
+  exampleInputJson = ['Please input your JSON data or try JS object here'];
+}
