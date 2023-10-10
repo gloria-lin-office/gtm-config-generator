@@ -4,12 +4,7 @@
       mat-stroked-button
       (click)="convertCode()"
       class="functional-card__actions__item"
-      [disabled]="
-        !form.valid ||
-        (
-          this.editorFacadeService.getInputJsonContent() | async
-        )?.state?.doc?.toString()?.length === 0
-      "
+      [disabled]="!form.valid"
     >
       Convert
     </button>
