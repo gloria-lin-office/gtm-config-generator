@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { Meta } from '@angular/platform-browser';
+import { MainPageComponent } from './components/main-page/main-page.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule],
+  imports: [MainPageComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
