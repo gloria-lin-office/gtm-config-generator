@@ -10,7 +10,7 @@ import { tap, combineLatest, take, Subject, takeUntil } from 'rxjs';
 import { SharedModule } from '../../shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
-import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
+import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
 import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
 import { MatAccordion } from '@angular/material/expansion';
 import { EditorView } from 'codemirror';

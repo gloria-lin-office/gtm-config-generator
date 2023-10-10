@@ -17,7 +17,7 @@ import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dia
 import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
 import { extractAccountAndContainerId, preprocessInput } from './utilities';
 import { SharedModule } from '../../shared.module';
-import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
+import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
 import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
 
 @Component({
