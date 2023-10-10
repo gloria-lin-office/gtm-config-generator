@@ -110,6 +110,7 @@ export class FunctionalCardComponent implements OnDestroy {
       this.tagManagerUrl.value
     );
 
+    // TODO: remove URLs regarding measurement ids
     const gtmConfigGenerator: GtmConfigGenerator = {
       accountId: accountId,
       containerId: containerId,

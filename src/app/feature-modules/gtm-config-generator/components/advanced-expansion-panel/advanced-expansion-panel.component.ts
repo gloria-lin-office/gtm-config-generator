@@ -13,6 +13,7 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
 import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
 import { MatAccordion } from '@angular/material/expansion';
+import { EditorView } from 'codemirror';
 
 @Component({
   selector: 'app-advanced-expansion-panel',
@@ -54,6 +55,8 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
     this.destroy$.complete();
   }
 
+  // handle forms' observables
+
   onFormChange() {
     combineLatest([
       this.editorFacadeService.getInputJsonContent(),
@@ -61,40 +64,30 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
     ])
       .pipe(
         takeUntil(this.destroy$),
-        tap(([editor, form]) => {
-          this.handleEditorAndFormChanges(editor, form);
-        })
+        tap(
+          ([editor, form]: [
+            EditorView,
+            {
+              includeVideoTag: boolean;
+              includeScrollTag: boolean;
+              includeItemScopedVariables: boolean;
+            }
+          ]) => {
+            this.handleEditorAndFormChanges(editor, form);
+          }
+        )
       )
       .subscribe();
   }
 
-  onPanelOpened() {
-    this.editorFacadeService
-      .getInputJsonContent()
+  onSetupFormChange() {
+    this.setupForm.valueChanges
       .pipe(
-        take(1),
         takeUntil(this.destroy$),
-        tap((editor) => {
-          const jsonString = editor?.state?.doc?.toString();
-
-          if (jsonString) {
-            const json = JSON.parse(jsonString);
-            const hasVideoTag = json.some(
-              (item: any) =>
-                item.event === 'video_start' ||
-                item.event === 'video_progress' ||
-                item.event === 'video_complete'
-            );
-            const hasScrollTag = json.some(
-              (item: any) => item.event === 'scroll'
-            );
-
-            this.form.patchValue(
-              {
-                includeVideoTag: hasVideoTag,
-                includeScrollTag: hasScrollTag,
-              },
-              { emitEvent: false }
+        tap((configurationName: string) => {
+          if (configurationName) {
+            this.setupConstructorService.setConfigurationName(
+              configurationName
             );
           }
         })
@@ -102,59 +95,55 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
       .subscribe();
   }
 
-  handleEditorAndFormChanges(editor: any, form: any) {
-    if (!editor.state.doc.toString()) return;
-    if (this.form.value.includeItemScopedVariables) {
-      this.setupConstructorService.setIncludeItemScopedVariables(true);
+  handleEditorAndFormChanges(
+    editor: EditorView,
+    form: {
+      includeVideoTag: boolean;
+      includeScrollTag: boolean;
+      includeItemScopedVariables: boolean;
     }
+  ) {
+    if (!editor.state.doc.toString() || !form) return;
 
     try {
       const jsonString = editor.state.doc.toString();
-      const json = JSON.parse(jsonString);
-
-      this.updateJsonForEvents(json, form.includeVideoTag, [
-        'video_start',
-        'video_progress',
-        'video_completion',
-      ]);
-
-      this.updateJsonForEvents(json, form.includeScrollTag, ['scroll']);
-      this.editorFacadeService.setInputJsonContent(json);
+      let json = JSON.parse(jsonString);
+      const updatedJson = this.editorFacadeService.updateJsonBasedOnForm(
+        json,
+        form
+      );
+      this.editorFacadeService.setInputJsonContent(updatedJson);
+      this.setupConstructorService.setIncludeItemScopedVariables(
+        form.includeItemScopedVariables
+      );
     } catch (error) {
       this.dialog.open(ErrorDialogComponent, {
         data: {
-          title: 'Error',
-          content: 'Please check your JSON syntax.',
+          message: 'Please check your JSON syntax.',
         },
       });
     }
   }
 
-  private updateJsonForEvents(
-    json: any[],
-    shouldInclude: boolean,
-    eventNames: string[]
-  ): void {
-    eventNames.forEach((eventName) => {
-      const eventIndex = json.findIndex(
-        (item: any) => item.event === eventName
-      );
-
-      if (shouldInclude && eventIndex === -1) {
-        json.push({ event: eventName });
-      } else if (!shouldInclude && eventIndex !== -1) {
-        json.splice(eventIndex, 1);
-      }
-    });
-  }
-
-  onSetupFormChange() {
-    this.setupForm.valueChanges
+  onPanelOpened() {
+    // when open the panel, update the form value
+    this.editorFacadeService
+      .getInputJsonContent()
       .pipe(
-        tap((configurationName: string) => {
-          if (configurationName) {
-            this.setupConstructorService.setConfigurationName(
-              configurationName
+        take(1),
+        takeUntil(this.destroy$),
+        tap((editor: EditorView) => {
+          const jsonString = editor.state.doc.toString();
+
+          if (jsonString) {
+            const json = JSON.parse(jsonString);
+
+            this.form.patchValue(
+              {
+                includeVideoTag: this.editorFacadeService.hasVideoTag(json),
+                includeScrollTag: this.editorFacadeService.hasScrollTag(json),
+              },
+              { emitEvent: false }
             );
           }
         })
