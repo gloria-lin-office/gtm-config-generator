@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { SharedModule } from '../../../../shared.module';
 
 enum ProgressSpinnerColor {
@@ -53,6 +53,7 @@ enum ProgressSpinnerColor {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressSpinnerComponent {
   @Input() numParsedTags: number | null = null;

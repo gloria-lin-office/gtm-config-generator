@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { XlsxProcessService } from '../../services/xlsx-process/xlsx-process.service';
 import { SharedModule } from '../../../../shared.module';
 
@@ -39,6 +39,7 @@ import { SharedModule } from '../../../../shared.module';
     </ng-container>
   `,
   styles: [``],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomMatTableComponent {
   @Input() displayedDataSource$!: Observable<any[]>;
