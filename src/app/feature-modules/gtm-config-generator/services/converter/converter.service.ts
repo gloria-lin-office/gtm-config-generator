@@ -30,7 +30,11 @@ export class ConverterService {
     this.dataLayerManager = new DataLayerManager();
   }
 
-  convert(configurationName: string, gtmConfigGenerator: GtmConfigGenerator) {
+  convert(
+    configurationName: string,
+    gtmConfigGenerator: GtmConfigGenerator,
+    includeItemScopedVariabled = false
+  ) {
     try {
       const specs = this.parseAllSpecs(gtmConfigGenerator.specs);
       const formattedData = specs.map((spec: { [x: string]: any }) => {
@@ -55,18 +59,13 @@ export class ConverterService {
         return { formattedParameters, eventName };
       });
 
-      const measurementIdSettings = {
-        stagingMeasurementId: gtmConfigGenerator.stagingMeasurementId,
-        stagingUrl: gtmConfigGenerator.stagingUrl,
-        productionMeasurementId: gtmConfigGenerator.productionMeasurementId,
-        productionUrl: gtmConfigGenerator.productionUrl,
-      };
-
       // get all necesssary data for export
       const triggers = this.triggerManager.getTriggers();
       const tags = this.tagManager.getTags();
-      const dataLayers = this.dataLayerManager.getDataLayers();
-
+      const dataLayers = this.dataLayerManager.getDataLayers(
+        includeItemScopedVariabled
+      );
+      console.log('dataLayers: ', dataLayers);
       return exportGtmJSON(
         configurationName,
         formattedData,

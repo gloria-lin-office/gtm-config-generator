@@ -2,28 +2,36 @@
   <mat-accordion multi>
     <mat-expansion-panel (opened)="onPanelOpened()" togglePosition="before">
       <mat-expansion-panel-header [@.disabled]="true">
-        <mat-panel-title> Include Built-in Tags </mat-panel-title>
+        <mat-panel-title> Additional Built-in Tags/variables </mat-panel-title>
       </mat-expansion-panel-header>
       <section class="advanced__tags">
         <form [formGroup]="form">
-          <mat-checkbox formControlName="includeVideoTag"
-            >Include Video Tag</mat-checkbox
-          >
-          <mat-checkbox formControlName="includeScrollTag"
-            >Include Scroll Tag</mat-checkbox
-          >
+          <div style="display: flex; flex-direction: column">
+            <mat-checkbox formControlName="includeVideoTag"
+              >Include Video Tag</mat-checkbox
+            >
+            <mat-checkbox formControlName="includeScrollTag"
+              >Include Scroll Tag</mat-checkbox
+            >
+            <div style="display: flex; align-items: center; gap: 1rem">
+              <mat-checkbox formControlName="includeItemScopedVariables"
+                >Include item scoped variable</mat-checkbox
+              >
+              <mat-icon matSuffix matTooltip="e.g., items[0].name"
+                >help_outline</mat-icon
+              >
+            </div>
+          </div>
         </form>
       </section>
     </mat-expansion-panel>
-    <mat-expansion-panel
-      togglePosition="before"
-      #setupPanel
-      (closed)="onSetupPanelClosed()"
-    >
+    <mat-expansion-panel togglePosition="before">
       <mat-expansion-panel-header [@.disabled]="true">
         <mat-panel-title> Configuration Naming</mat-panel-title>
         <mat-panel-description
-          >By default is GA4 Configuration</mat-panel-description
+          ><mat-icon matSuffix matTooltip="By default is GA4 Configuration"
+            >help_outline</mat-icon
+          ></mat-panel-description
         >
       </mat-expansion-panel-header>
       <section class="advanced__configuration-name">
