@@ -6,7 +6,7 @@ import {
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 
 @Component({
   selector: 'app-conversion-success-dialog',

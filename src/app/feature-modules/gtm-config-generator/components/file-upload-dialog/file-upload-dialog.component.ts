@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { BehaviorSubject, tap } from 'rxjs';
 import { EventBusService } from '../../../../services/event-bus/event-bus.service';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
 
 @Component({

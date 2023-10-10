@@ -15,7 +15,7 @@ import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/c
 import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
 import { preprocessInput } from '../../services/converter/utilities/utilities';
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from '../../../../shared.module';
 import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
 import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
 
