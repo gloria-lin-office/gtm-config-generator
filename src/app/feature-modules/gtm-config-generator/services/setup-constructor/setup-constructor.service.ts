@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { GtmConfigGenerator } from 'src/app/interfaces/gtm-config-generator';
+import { extractAccountAndContainerId } from '../converter/utilities/utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -26,5 +28,25 @@ export class SetupConstructorService {
 
   getIncludeItemScopedVariables() {
     return this.includeItemScopedVariables.asObservable();
+  }
+
+  generateGtmConfig(
+    json: any,
+    tagManagerUrl: string,
+    containerName: string,
+    gtmId: string
+  ): GtmConfigGenerator {
+    const { accountId, containerId } =
+      extractAccountAndContainerId(tagManagerUrl);
+
+    const gtmConfigGenerator: GtmConfigGenerator = {
+      accountId: accountId,
+      containerId: containerId,
+      containerName: containerName,
+      gtmId: gtmId,
+      specs: json,
+    };
+
+    return gtmConfigGenerator;
   }
 }

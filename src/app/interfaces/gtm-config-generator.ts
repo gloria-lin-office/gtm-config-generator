@@ -69,10 +69,6 @@ export interface GtmConfigGenerator {
   containerName: string;
   gtmId: string;
   specs: string;
-  stagingUrl?: string;
-  stagingMeasurementId?: string;
-  productionUrl?: string;
-  productionMeasurementId?: string;
 }
 
 export interface DataRow {

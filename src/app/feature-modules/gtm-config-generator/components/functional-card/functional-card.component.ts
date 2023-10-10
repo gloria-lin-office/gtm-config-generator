@@ -6,16 +6,15 @@ import {
 } from '@angular/core';
 import { ConverterService } from '../../services/converter/converter.service';
 import { Subject, combineLatest, take, takeUntil, tap } from 'rxjs';
-import { FormControl, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
-import { GtmConfigGenerator } from 'src/app/interfaces/gtm-config-generator';
 import { containerName, gtmId, tagManagerUrl } from './test-data';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConversionSuccessDialogComponent } from '../conversion-success-dialog/conversion-success-dialog.component';
 import { FileUploadDialogComponent } from '../file-upload-dialog/file-upload-dialog.component';
 import { AdvancedExpansionPanelComponent } from '../advanced-expansion-panel/advanced-expansion-panel.component';
-import { extractAccountAndContainerId, preprocessInput } from './utilities';
+import { preprocessInput } from '../../services/converter/utilities/utilities';
 import { SharedModule } from '../../shared.module';
 import { EditorFacadeService } from '../../services/editor-facade/editor-facade.service';
 import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
@@ -86,8 +85,22 @@ export class FunctionalCardComponent implements OnDestroy {
     configurationName: string,
     includeItemScopedVariables: boolean
   ) {
+    if (!this.tagManagerUrl || !this.containerName || !this.gtmId) {
+      this.dialog.open(ErrorDialogComponent, {
+        data: {
+          message: 'Please fill in all required fields',
+        },
+      });
+      throw new Error('Please fill in all required fields');
+    }
+
     this.editorFacadeService.setInputJsonContent(JSON.parse(json));
-    const gtmConfigGenerator = this.generateGtmConfig(json);
+    const gtmConfigGenerator = this.setupConstructorService.generateGtmConfig(
+      json,
+      this.tagManagerUrl,
+      this.containerName,
+      this.gtmId
+    );
     const result = this.converterService.convert(
       configurationName,
       gtmConfigGenerator,
@@ -103,27 +116,6 @@ export class FunctionalCardComponent implements OnDestroy {
     window.dataLayer.push({
       event: 'btn_convert_click',
     });
-  }
-
-  generateGtmConfig(json: any): GtmConfigGenerator {
-    const { accountId, containerId } = extractAccountAndContainerId(
-      this.tagManagerUrl.value
-    );
-
-    // TODO: remove URLs regarding measurement ids
-    const gtmConfigGenerator: GtmConfigGenerator = {
-      accountId: accountId,
-      containerId: containerId,
-      containerName: this.containerName.value,
-      gtmId: this.gtmId.value,
-      specs: json,
-      stagingUrl: '',
-      stagingMeasurementId: '',
-      productionUrl: '',
-      productionMeasurementId: '',
-    };
-
-    return gtmConfigGenerator;
   }
 
   onUpload() {
@@ -152,15 +144,15 @@ export class FunctionalCardComponent implements OnDestroy {
   }
 
   get tagManagerUrl() {
-    return this.form.get('tagManagerUrl') as FormControl<string>;
+    return this.form.controls.tagManagerUrl.value;
   }
 
   get containerName() {
-    return this.form.get('containerName') as FormControl<string>;
+    return this.form.controls.containerName.value;
   }
 
   get gtmId() {
-    return this.form.get('gtmId') as FormControl<string>;
+    return this.form.controls.gtmId.value;
   }
 
   ngOnDestroy() {

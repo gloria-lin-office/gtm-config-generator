@@ -5,7 +5,7 @@ import {
   filterGtmSpecsFromData,
   filterNonEmptyData,
   unfixedableJsonString,
-} from '../../components/xlsx-sidenav/xlsx-helper';
+} from '../xlsx-facade/xlsx-helper';
 import { EditorService } from '../editor/editor.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../../components/error-dialog/error-dialog.component';

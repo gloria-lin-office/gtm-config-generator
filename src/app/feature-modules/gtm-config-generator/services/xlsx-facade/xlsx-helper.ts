@@ -1,5 +1,5 @@
 import { DataRow } from '../../../../interfaces/gtm-config-generator';
-import { fixJsonString } from '../../services/converter/utilities/json-string-utils';
+import { fixJsonString } from '../converter/utilities/json-string-utils';
 
 export const unfixedableJsonString: Set<string> = new Set();
 

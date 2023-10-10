@@ -8,7 +8,6 @@ import {
 import { MatSidenav } from '@angular/material/sidenav';
 import { EventBusService } from '../../../../services/event-bus/event-bus.service';
 import {
-  BehaviorSubject,
   Observable,
   Subject,
   combineLatest,
@@ -163,6 +162,6 @@ export class XlsxSidenavComponent implements AfterViewInit, OnDestroy {
 
   // getters
   get dataColumnName() {
-    return this.form.get('dataColumnName');
+    return this.form.controls.dataColumnName;
   }
 }
