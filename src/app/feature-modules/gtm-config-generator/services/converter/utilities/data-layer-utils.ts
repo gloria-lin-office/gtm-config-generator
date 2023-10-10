@@ -14,7 +14,11 @@ export class DataLayerManager {
     return dataLayers.some((dL) => dL.includes(dLReference));
   }
 
-  getDataLayers(): string[] {
-    return this.dataLayers;
+  getDataLayers(includeItemScopedVariables: boolean): string[] {
+    console.log('includeItemScopedVariables: ', includeItemScopedVariables);
+    if (includeItemScopedVariables) {
+      return this.dataLayers;
+    }
+    return this.dataLayers.filter((dL) => !dL.includes('ecommerce.items.0'));
   }
 }

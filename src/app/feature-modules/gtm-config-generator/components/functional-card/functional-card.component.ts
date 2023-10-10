@@ -5,7 +5,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ConverterService } from '../../services/converter/converter.service';
-import { Subject, combineLatest, takeUntil, tap } from 'rxjs';
+import { Subject, combineLatest, take, takeUntil, tap } from 'rxjs';
 import { FormControl, Validators } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
 import { GtmConfigGenerator } from 'src/app/interfaces/gtm-config-generator';
@@ -29,14 +29,14 @@ import { SetupConstructorService } from '../../services/setup-constructor/setup-
   encapsulation: ViewEncapsulation.None,
 })
 export class FunctionalCardComponent implements OnDestroy {
+  @ViewChild('accordionContainer')
+  accordionContainer!: AdvancedExpansionPanelComponent;
   private destroy$ = new Subject<void>();
   form = this.fb.group({
-    tagManagerUrl: ['', Validators.required],
-    containerName: ['', Validators.required],
-    gtmId: ['', Validators.required],
+    tagManagerUrl: [tagManagerUrl, Validators.required],
+    containerName: [containerName, Validators.required],
+    gtmId: [gtmId, Validators.required],
   });
-
-  @ViewChild('setupAccordion') setupAccordion!: AdvancedExpansionPanelComponent;
 
   constructor(
     private converterService: ConverterService,
@@ -47,32 +47,51 @@ export class FunctionalCardComponent implements OnDestroy {
   ) {}
 
   convertCode() {
-    this.setupAccordion.setupPanel.close();
+    this.accordionContainer.accordion.closeAll();
     combineLatest([
       this.editorFacadeService.getInputJsonContent(),
       this.setupConstructorService.getConfigurationName(),
+      this.setupConstructorService.getIncludeItemScopedVariables(),
     ])
       .pipe(
+        take(1),
         takeUntil(this.destroy$),
-        tap(([inputJsonEditor, configurationName]) => {
-          try {
-            const json = preprocessInput(inputJsonEditor.state.doc.toString());
-            this.performConversion(json, configurationName);
-          } catch (error) {
-            this.openDialog(error);
-            console.error(error);
+        tap(
+          ([
+            inputJsonEditor,
+            configurationName,
+            includeItemScopedVariables,
+          ]) => {
+            try {
+              const json = preprocessInput(
+                inputJsonEditor.state.doc.toString()
+              );
+              this.performConversion(
+                json,
+                configurationName,
+                includeItemScopedVariables
+              );
+            } catch (error) {
+              this.openDialog(error);
+              console.error(error);
+            }
           }
-        })
+        )
       )
       .subscribe();
   }
 
-  performConversion(json: any, configurationName: string) {
+  performConversion(
+    json: any,
+    configurationName: string,
+    includeItemScopedVariables: boolean
+  ) {
     this.editorFacadeService.setInputJsonContent(JSON.parse(json));
     const gtmConfigGenerator = this.generateGtmConfig(json);
     const result = this.converterService.convert(
       configurationName,
-      gtmConfigGenerator
+      gtmConfigGenerator,
+      includeItemScopedVariables
     );
     this.postConversion(result);
   }

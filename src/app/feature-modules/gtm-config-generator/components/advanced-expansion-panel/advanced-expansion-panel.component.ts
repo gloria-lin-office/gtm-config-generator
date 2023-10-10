@@ -12,7 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { EditorFacadeService } from '../../services/editor-facade/editor-faced.service';
 import { SetupConstructorService } from '../../services/setup-constructor/setup-constructor.service';
-import { MatExpansionPanel } from '@angular/material/expansion';
+import { MatAccordion } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-advanced-expansion-panel',
@@ -26,13 +26,14 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
   form: FormGroup = this.fb.group({
     includeVideoTag: [false],
     includeScrollTag: [false],
+    includeItemScopedVariables: [false],
   });
 
   setupForm: FormGroup = this.fb.group({
     configurationName: ['GA4 Configuration'],
   });
 
-  @ViewChild('setupPanel') setupPanel!: MatExpansionPanel;
+  @ViewChild(MatAccordion) accordion!: MatAccordion;
 
   private destroy$ = new Subject<void>();
 
@@ -45,6 +46,7 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.onFormChange();
+    this.onSetupFormChange();
   }
 
   ngOnDestroy(): void {
@@ -102,6 +104,9 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
 
   handleEditorAndFormChanges(editor: any, form: any) {
     if (!editor.state.doc.toString()) return;
+    if (this.form.value.includeItemScopedVariables) {
+      this.setupConstructorService.setIncludeItemScopedVariables(true);
+    }
 
     try {
       const jsonString = editor.state.doc.toString();
@@ -143,20 +148,17 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
     });
   }
 
-  saveConfigurationName() {
-    this.setupConstructorService.setConfigurationName(
-      this.setupForm.value.configurationName
-    );
-  }
-
-  onSetupPanelClosed() {
-    if (!this.setupForm.value.configurationName) {
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          message: 'Please Enter a Configuration Name.',
-        },
-      });
-    }
-    this.saveConfigurationName();
+  onSetupFormChange() {
+    this.setupForm.valueChanges
+      .pipe(
+        tap((configurationName: string) => {
+          if (configurationName) {
+            this.setupConstructorService.setConfigurationName(
+              configurationName
+            );
+          }
+        })
+      )
+      .subscribe();
   }
 }
