@@ -9,7 +9,7 @@ export function createRegexMeasurementIdVariable(
   containerId: string
 ): VariableConfig {
   return {
-    name: `Regex Measurement ID table`,
+    name: `Measurement ID`,
     type: 'remm',
     accountId,
     containerId,

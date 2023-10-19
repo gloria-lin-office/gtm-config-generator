@@ -6,14 +6,19 @@ import {
 
 export function createListParameter(
   key: string,
+  dataLayers: string[],
   parameters: Parameter[]
 ): Parameter {
+  // TODO: mistery using dataLayers with the prefix 'ecommerce.'
   return {
     type: 'LIST',
     key,
-    list: parameters.map((param) =>
-      createMapParameter(param.key, `{{DLV - ${param.value}}}`)
-    ),
+    list: parameters.map((param: Parameter) => {
+      return createMapParameter(
+        param.key,
+        `{{DLV - ${param.value as string}}}`
+      );
+    }),
   };
 }
 
