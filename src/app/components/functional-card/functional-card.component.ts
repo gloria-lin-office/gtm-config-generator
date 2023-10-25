@@ -32,9 +32,9 @@ export class FunctionalCardComponent implements OnDestroy {
   accordionContainer!: AdvancedExpansionPanelComponent;
   private destroy$ = new Subject<void>();
   form = this.fb.group({
-    tagManagerUrl: ['', Validators.required],
-    containerName: ['', Validators.required],
-    gtmId: ['', Validators.required],
+    tagManagerUrl: [tagManagerUrl, Validators.required],
+    containerName: [containerName, Validators.required],
+    gtmId: [gtmId, Validators.required],
   });
 
   constructor(
