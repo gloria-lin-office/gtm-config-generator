@@ -4,6 +4,7 @@
       <mat-expansion-panel-header [@.disabled]="true">
         <mat-panel-title> Additional Built-in Tags/variables </mat-panel-title>
       </mat-expansion-panel-header>
+      @defer (on viewport) {
       <section class="advanced__tags">
         <form [formGroup]="form">
           <div style="display: flex; flex-direction: column">
@@ -24,6 +25,9 @@
           </div>
         </form>
       </section>
+      } @placeholder {
+      <div></div>
+      }
     </mat-expansion-panel>
     <mat-expansion-panel togglePosition="before">
       <mat-expansion-panel-header [@.disabled]="true">
@@ -34,6 +38,7 @@
           ></mat-panel-description
         >
       </mat-expansion-panel-header>
+      @defer (on viewport) {
       <section class="advanced__configuration-name">
         <form [formGroup]="setupForm">
           <mat-form-field>
@@ -41,6 +46,9 @@
           </mat-form-field>
         </form>
       </section>
+      } @placeholder {
+      <div></div>
+      }
     </mat-expansion-panel>
   </mat-accordion>
 </div>

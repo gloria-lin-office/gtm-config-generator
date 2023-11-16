@@ -20,8 +20,16 @@
   <mat-sidenav-container>
     <app-xlsx-sidenav-form></app-xlsx-sidenav-form>
   </mat-sidenav-container>
+  @defer (on viewport) {
   <div class="main-page__article">
     <app-article />
   </div>
+  } @placeholder {
+  <div></div>
+  }
 </div>
+@defer (on viewport) {
 <app-footer></app-footer>
+} @placeholder {
+<div></div>
+}

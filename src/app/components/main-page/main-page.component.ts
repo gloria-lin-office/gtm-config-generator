@@ -15,8 +15,8 @@ import { SharedModule } from '../../shared.module';
     FunctionalCardComponent,
     ArticleComponent,
     FooterComponent,
-    XlsxSidenavComponent,
-  ],
+    XlsxSidenavComponent
+],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],
 })

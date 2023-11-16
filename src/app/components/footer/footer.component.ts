@@ -18,7 +18,7 @@ import { Component } from '@angular/core';
       <p class="text-muted">
         Contact:
         <a href="mailto:guanxin.wang@fifty-five.com"
-          >guanxin.wang@fifty-five.com</a
+          >guanxin.wang&#64;fifty-five.com</a
         >
       </p>
       <p class="text-muted">
