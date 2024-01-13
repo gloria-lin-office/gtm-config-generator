@@ -36,6 +36,13 @@ export function scrollTag(
       ],
       fingerprint: '1690184079241',
       firingTriggerId: [triggerId],
+      tagFiringOption: 'ONCE_PER_EVENT',
+      monitoringMetadata: {
+        type: 'MAP',
+      },
+      consentSettings: {
+        consentStatus: 'NOT_SET',
+      },
     },
   ];
 }
