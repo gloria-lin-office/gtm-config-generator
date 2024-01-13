@@ -50,6 +50,13 @@ export interface TagConfig {
   parameter: Parameter[];
   fingerprint?: string;
   firingTriggerId: string[];
+  tagFiringOption: string;
+  monitoringMetadata: {
+    type: 'MAP';
+  };
+  consentSettings: {
+    consentStatus: 'NOT_SET';
+  };
 }
 
 export interface VariableConfig {

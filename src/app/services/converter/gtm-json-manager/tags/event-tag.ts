@@ -37,5 +37,12 @@ export function createTag(
     firingTriggerId: tag.triggers.map((t) =>
       findTriggerIdByEventName(t.name, triggers)
     ),
+    tagFiringOption: 'ONCE_PER_EVENT',
+    monitoringMetadata: {
+      type: 'MAP',
+    },
+    consentSettings: {
+      consentStatus: 'NOT_SET',
+    },
   };
 }

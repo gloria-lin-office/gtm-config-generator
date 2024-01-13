@@ -39,6 +39,13 @@ export function videoTag(
       ],
       fingerprint: '1690374452646',
       firingTriggerId: [triggerId],
+      tagFiringOption: 'ONCE_PER_EVENT',
+      monitoringMetadata: {
+        type: 'MAP',
+      },
+      consentSettings: {
+        consentStatus: 'NOT_SET',
+      },
     },
     {
       accountId,
@@ -54,6 +61,13 @@ export function videoTag(
       ],
       fingerprint: '1689848944995',
       firingTriggerId: [triggerId],
+      tagFiringOption: 'ONCE_PER_EVENT',
+      monitoringMetadata: {
+        type: 'MAP',
+      },
+      consentSettings: {
+        consentStatus: 'NOT_SET',
+      },
     },
   ];
 }
