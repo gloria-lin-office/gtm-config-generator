@@ -15,7 +15,7 @@ export function createListParameter(
     key,
     list: parameters.map((param: Parameter) => {
       return createMapParameter(
-        param.key,
+        param.key.trim(),
         `{{DLV - ${param.value as string}}}`
       );
     }),

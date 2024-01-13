@@ -11,14 +11,14 @@ export function createVariable(
   dataLayerName: string
 ): VariableConfig {
   return {
-    name: `DLV - ${dataLayerName}`,
+    name: `DLV - ${dataLayerName.trim()}`,
     type: 'v',
     accountId,
     containerId,
     parameter: [
       createIntegerParameter('dataLayerVersion', '2'),
       createBooleanParameter('setDefaultValue', 'false'),
-      createTemplateParameter('name', dataLayerName),
+      createTemplateParameter('name', dataLayerName.trim()),
     ],
   };
 }
