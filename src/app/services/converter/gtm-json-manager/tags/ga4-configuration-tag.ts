@@ -20,5 +20,12 @@ export function createGA4Configuration(
       createTemplateParameter('measurementId', '{{Measurement ID}}'),
     ],
     firingTriggerId: ['2147479553'],
+    tagFiringOption: 'ONCE_PER_EVENT',
+    monitoringMetadata: {
+      type: 'MAP',
+    },
+    consentSettings: {
+      consentStatus: 'NOT_SET',
+    },
   };
 }
