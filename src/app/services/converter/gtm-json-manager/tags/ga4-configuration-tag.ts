@@ -5,19 +5,23 @@ import {
 } from '../parameter-utils';
 
 export function createGA4Configuration(
-  configurationName: string,
+  googleTagName: string,
+  measurementId: string,
   accountId: string,
   containerId: string
 ): TagConfig {
+  const measurementIdParameter = measurementId
+    ? measurementId
+    : '{{Measurement ID}}';
   return {
-    name: configurationName,
+    name: googleTagName,
     type: 'gaawc',
     accountId,
     containerId,
     parameter: [
       createBooleanParameter('sendPageView', 'false'),
       createBooleanParameter('enableSendToServerContainer', 'false'),
-      createTemplateParameter('measurementId', '{{Measurement ID}}'),
+      createTemplateParameter('measurementId', `${measurementIdParameter}`),
     ],
     firingTriggerId: ['2147479553'],
     tagFiringOption: 'ONCE_PER_EVENT',

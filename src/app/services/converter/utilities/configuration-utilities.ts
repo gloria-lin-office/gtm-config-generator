@@ -69,7 +69,8 @@ export function getGTMFinalConfiguration(
 }
 
 export function exportGtmJSON(
-  configurationName: string,
+  googleTagName: string,
+  measurementId: string,
   data: Record<string, string>[],
   accountId: string,
   containerId: string,
@@ -86,7 +87,8 @@ export function exportGtmJSON(
   );
   const _triggers = getTriggers(accountId, containerId, data, triggers);
   const _tags = tagManager.getAllTags(
-    configurationName,
+    googleTagName,
+    measurementId,
     accountId,
     containerId,
     data,
