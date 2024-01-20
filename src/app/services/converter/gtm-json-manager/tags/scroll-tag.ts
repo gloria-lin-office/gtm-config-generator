@@ -21,7 +21,7 @@ export function scrollTag(
     {
       accountId,
       containerId,
-      name: 'GA4 - scroll',
+      name: 'GA4 event - scroll',
       type: 'gaawe',
       parameter: [
         createBooleanParameter('sendEcommerceData', 'false'),
