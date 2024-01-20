@@ -12,7 +12,7 @@ import {
 } from '../parameter-utils';
 
 export function createTag(
-  configurationName: string,
+  googleTagName: string,
   accountId: string,
   containerId: string,
   tag: Tag,
@@ -32,7 +32,7 @@ export function createTag(
       createBooleanParameter('sendEcommerceData', 'false'),
       createTemplateParameter('eventName', tag.name),
       createListParameter('eventParameters', dataLayers, tag.parameters),
-      createTagReferenceParameter('measurementId', configurationName),
+      createTagReferenceParameter('measurementId', googleTagName),
     ],
     firingTriggerId: tag.triggers.map((t) =>
       findTriggerIdByEventName(t.name, triggers)

@@ -7,19 +7,26 @@ import { extractAccountAndContainerId } from '../converter/utilities/utilities';
   providedIn: 'root',
 })
 export class SetupConstructorService {
-  configurationName: BehaviorSubject<string> = new BehaviorSubject<string>(
-    'GA4 Configuration'
-  );
+  googleTagName: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  measurementId: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   includeItemScopedVariables: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(false);
 
-  setConfigurationName(name: string) {
-    this.configurationName.next(name);
+  setGoogleTagName(name: string) {
+    this.googleTagName.next(name);
   }
 
-  getConfigurationName() {
-    return this.configurationName.asObservable();
+  getGoogleTagName() {
+    return this.googleTagName.asObservable();
+  }
+
+  setMeasurementId(id: string) {
+    this.measurementId.next(id);
+  }
+
+  getMeasurementId() {
+    return this.measurementId.asObservable();
   }
 
   setIncludeItemScopedVariables(include: boolean) {

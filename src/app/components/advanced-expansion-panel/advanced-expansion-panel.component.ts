@@ -3,6 +3,7 @@ import {
   ViewEncapsulation,
   AfterViewInit,
   ViewChild,
+  OnInit,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormBuilder } from '@angular/forms';
@@ -30,8 +31,10 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
     includeItemScopedVariables: [false],
   });
 
+  // TODO: if using existing measurement id, then disable the googleTagName input field
   setupForm: FormGroup = this.fb.group({
-    configurationName: ['GA4 Configuration'],
+    googleTagName: [''],
+    useExistingMesurementId: [''],
   });
 
   @ViewChild(MatAccordion) accordion!: MatAccordion;
@@ -80,14 +83,25 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
       .subscribe();
   }
 
+  // TODO: handle control value changes one by one
   onSetupFormChange() {
-    this.setupForm.valueChanges
+    this.setupForm.controls['googleTagName'].valueChanges
       .pipe(
         takeUntil(this.destroy$),
-        tap((configurationName: string) => {
-          if (configurationName) {
-            this.setupConstructorService.setConfigurationName(
-              configurationName
+        tap((googleTagName: string) => {
+          if (googleTagName) {
+            this.setupConstructorService.setGoogleTagName(googleTagName);
+          }
+        })
+      )
+      .subscribe();
+
+    this.setupForm.controls['useExistingMesurementId'].valueChanges
+      .pipe(
+        tap((useExistingMeasurementId) => {
+          if (useExistingMeasurementId) {
+            this.setupConstructorService.setMeasurementId(
+              useExistingMeasurementId
             );
           }
         })
