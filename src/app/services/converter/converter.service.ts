@@ -31,7 +31,8 @@ export class ConverterService {
   }
 
   convert(
-    configurationName: string,
+    googleTagName: string,
+    measurementId: string,
     gtmConfigGenerator: GtmConfigGenerator,
     includeItemScopedVariabled = false
   ) {
@@ -67,7 +68,8 @@ export class ConverterService {
       );
       console.log('dataLayers: ', dataLayers);
       return exportGtmJSON(
-        configurationName,
+        googleTagName,
+        measurementId,
         formattedData,
         gtmConfigGenerator.accountId,
         gtmConfigGenerator.containerId,
