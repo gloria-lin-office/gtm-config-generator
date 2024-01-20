@@ -21,7 +21,7 @@ export function videoTag(
     {
       accountId,
       containerId,
-      name: 'GA4 Event - Video',
+      name: 'GA4 event - Video',
       type: 'gaawe',
       parameter: [
         createBooleanParameter('sendEcommerceData', 'false'),
