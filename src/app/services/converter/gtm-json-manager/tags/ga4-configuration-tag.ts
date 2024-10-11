@@ -7,21 +7,22 @@ import {
 export function createGA4Configuration(
   googleTagName: string,
   measurementId: string,
+  measurementIdVariable: string,
   accountId: string,
   containerId: string
 ): TagConfig {
   const measurementIdParameter = measurementId
     ? measurementId
-    : '{{Measurement ID}}';
+    : `{{${measurementIdVariable || "Measurement ID"}}}`;
   return {
-    name: googleTagName,
-    type: 'gaawc',
     accountId,
     containerId,
+    name: googleTagName,
+    type: 'googtag',
     parameter: [
-      createBooleanParameter('sendPageView', 'false'),
-      createBooleanParameter('enableSendToServerContainer', 'false'),
-      createTemplateParameter('measurementId', `${measurementIdParameter}`),
+      // createBooleanParameter('sendPageView', 'false'),
+      // createBooleanParameter('enableSendToServerContainer', 'false'),
+      createTemplateParameter('tagId', `${measurementIdParameter}`),
     ],
     firingTriggerId: ['2147479553'],
     tagFiringOption: 'ONCE_PER_EVENT',

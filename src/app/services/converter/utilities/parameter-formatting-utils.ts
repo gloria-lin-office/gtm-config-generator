@@ -1,5 +1,5 @@
 import { Parameter } from '../../../interfaces/gtm-config-generator';
-
+import { isBuiltInEcommerceAttr } from '../utilities/event-utils';
 /**
  * Formats an object into an array of key-value pairs, where each key is treated as a name and each value as a value.
  * The first character of each value is omitted.
@@ -23,13 +23,32 @@ export function formatParameters(params: Record<string, string>): Parameter[] {
 export function formatSingleEventParameters(eventParams: string): Parameter[] {
   const parsedEventParams = JSON.parse(eventParams);
   const ecommerceString = 'ecommerce';
+  // const itemsString = 'items';
+
 
   if (parsedEventParams.hasOwnProperty(ecommerceString)) {
     const { ecommerce, ...rest } = parsedEventParams;
     // TODO: workaround to add the prefix '$ecommerce.' manully to the ecommerce object
     // Should be checking the dataLayers path for the prefix 'ecommerce.'
+
+    // if( ecommerce.hasOwnProperty(itemsString) ){
+    //   ecommerce.items.forEach((ele:any,idx:any)=>{
+    //     Object.keys(ele).forEach((key:string) => {
+    //       if( -1==ecommerceItemsKeys.indexOf(key) ){
+    //         ecommerce[`${itemsString}.${idx}.${key}`] = ele[key];
+    //       }
+    //     });
+    //   })
+      
+    // }
+
+    
     Object.keys(ecommerce).forEach((key) => {
-      ecommerce[key] = `$ecommerce.${key}`;
+      if( isBuiltInEcommerceAttr(key) ){
+        delete ecommerce[key];
+      } else {
+        ecommerce[key] = `$ecommerce.${key}`;
+      }
     });
     console.log('ecommerce: ', ecommerce);
     const ecommerceParams = formatParameters(ecommerce);

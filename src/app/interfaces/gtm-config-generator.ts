@@ -40,6 +40,7 @@ export interface Tag {
   name: string;
   triggers: Trigger[];
   parameters: Parameter[];
+  data: any;
 }
 
 export interface TagConfig {

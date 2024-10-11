@@ -33,6 +33,7 @@ export class ConverterService {
   convert(
     googleTagName: string,
     measurementId: string,
+    measurementIdVariable: string,
     gtmConfigGenerator: GtmConfigGenerator,
     includeItemScopedVariabled = false
   ) {
@@ -40,10 +41,14 @@ export class ConverterService {
       const specs = this.parseAllSpecs(gtmConfigGenerator.specs);
       const formattedData = specs.map((spec: { [x: string]: any }) => {
         const eventName = spec['event'];
+        let isEcommerce = false;
 
         const eventParameters = { ...spec }; // copy of spec
         delete eventParameters['event'];
 
+        if(eventParameters.hasOwnProperty("ecommerce")){
+          isEcommerce = true;
+        }
         const formattedParameters = formatSingleEventParameters(
           JSON.stringify(eventParameters)
         );
@@ -54,7 +59,10 @@ export class ConverterService {
         this.tagManager.formatSingleTag(
           formattedParameters,
           eventName,
-          triggers
+          triggers,
+          {
+            isEcommerce: isEcommerce
+          }
         );
 
         return { formattedParameters, eventName };
@@ -70,6 +78,7 @@ export class ConverterService {
       return exportGtmJSON(
         googleTagName,
         measurementId,
+        measurementIdVariable,
         formattedData,
         gtmConfigGenerator.accountId,
         gtmConfigGenerator.containerId,

@@ -6,10 +6,11 @@ import {
 
 export function createRegexMeasurementIdVariable(
   accountId: string,
-  containerId: string
+  containerId: string,
+  measurementIdVariable: string
 ): VariableConfig {
   return {
-    name: `Measurement ID`,
+    name: measurementIdVariable || `Measurement ID`,
     type: 'remm',
     accountId,
     containerId,

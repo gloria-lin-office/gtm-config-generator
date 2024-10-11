@@ -94,7 +94,7 @@ describe('Tag-related Helper Functions', () => {
     );
     // Test structure and some of the properties
     expect(result).toHaveProperty('name', 'GA4 Configuration');
-    expect(result).toHaveProperty('type', 'gaawc');
+    expect(result).toHaveProperty('type', 'googtag');
   });
 
   it('should createTag function', () => {

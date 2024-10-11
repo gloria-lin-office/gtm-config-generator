@@ -32,7 +32,7 @@ export function scrollTag(
             '{{Scroll Depth Threshold}}'
           ),
         ]),
-        createTagReferenceParameter('measurementId', configurationName),
+        createTagReferenceParameter('measurementIdOverride', configurationName),
       ],
       fingerprint: '1690184079241',
       firingTriggerId: [triggerId],

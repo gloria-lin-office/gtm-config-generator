@@ -35,7 +35,7 @@ export function videoTag(
           createMapParameter('video_url', '{{Video URL}}'),
           createMapParameter('visible', '{{Video Visible}}'),
         ]),
-        createTagReferenceParameter('measurementId', configurationName),
+        createTagReferenceParameter('measurementIdOverride', configurationName),
       ],
       fingerprint: '1690374452646',
       firingTriggerId: [triggerId],

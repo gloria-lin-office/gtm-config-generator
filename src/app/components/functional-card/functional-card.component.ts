@@ -51,6 +51,7 @@ export class FunctionalCardComponent implements OnDestroy {
       this.editorFacadeService.getInputJsonContent(),
       this.setupConstructorService.getGoogleTagName(),
       this.setupConstructorService.getMeasurementId(),
+      this.setupConstructorService.getMeasurementIdVariable(),
       this.setupConstructorService.getIncludeItemScopedVariables(),
     ])
       .pipe(
@@ -61,6 +62,7 @@ export class FunctionalCardComponent implements OnDestroy {
             inputJsonEditor,
             googleTagName,
             measurementId,
+            measurementIdVariable,
             includeItemScopedVariables,
           ]) => {
             try {
@@ -71,6 +73,7 @@ export class FunctionalCardComponent implements OnDestroy {
                 json,
                 googleTagName,
                 measurementId,
+                measurementIdVariable,
                 includeItemScopedVariables
               );
             } catch (error) {
@@ -87,6 +90,7 @@ export class FunctionalCardComponent implements OnDestroy {
     json: any,
     googleTagName: string,
     measurementId: string,
+    measurementIdVariable: string,
     includeItemScopedVariables: boolean
   ) {
     if (!this.tagManagerUrl || !this.containerName || !this.gtmId) {
@@ -108,6 +112,7 @@ export class FunctionalCardComponent implements OnDestroy {
     const result = this.converterService.convert(
       googleTagName,
       measurementId,
+      measurementIdVariable,
       gtmConfigGenerator,
       includeItemScopedVariables
     );

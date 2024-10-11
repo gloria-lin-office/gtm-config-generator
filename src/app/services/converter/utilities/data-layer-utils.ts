@@ -1,3 +1,5 @@
+import { isBuiltInEcommerceAttrWithEcommercePrefix } from '../utilities/event-utils';
+
 export class DataLayerManager {
   dataLayers: string[] = [];
 
@@ -19,6 +21,13 @@ export class DataLayerManager {
     if (includeItemScopedVariables) {
       return this.dataLayers;
     }
-    return this.dataLayers.filter((dL) => !dL.includes('ecommerce.items.0'));
+
+    let tmp = this.dataLayers.filter(sourceElement => {
+      return !isBuiltInEcommerceAttrWithEcommercePrefix(sourceElement);
+    });
+    tmp = tmp.filter((dL:any) => dL !== 'ecommerce');
+
+
+    return tmp.filter((dL:any) => !dL.includes('ecommerce.items.0'));
   }
 }

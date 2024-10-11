@@ -37,8 +37,8 @@ export function createMapParameter(name: string, value: string): ParameterMap {
   return {
     type: 'MAP',
     map: [
-      createTemplateParameter('name', name),
-      createTemplateParameter('value', value),
+      createTemplateParameter('parameter', name),
+      createTemplateParameter('parameterValue', value),
     ],
   };
 }
@@ -64,7 +64,7 @@ export function createTagReferenceParameter(
   value: string
 ): Parameter {
   return {
-    type: 'TAG_REFERENCE',
+    type: 'TEMPLATE',
     key,
     value,
   };

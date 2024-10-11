@@ -35,6 +35,7 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
   setupForm: FormGroup = this.fb.group({
     googleTagName: [''],
     useExistingMesurementId: [''],
+    useExistingMesurementVariable: [''],
   });
 
   @ViewChild(MatAccordion) accordion!: MatAccordion;
@@ -107,6 +108,19 @@ export class AdvancedExpansionPanelComponent implements AfterViewInit {
         })
       )
       .subscribe();
+
+
+    this.setupForm.controls['useExistingMesurementVariable'].valueChanges
+    .pipe(
+      tap((useExistingMesurementVariable) => {
+        if (useExistingMesurementVariable) {
+          this.setupConstructorService.setMeasurementIdVariable(
+            useExistingMesurementVariable
+          );
+        }
+      })
+    )
+    .subscribe();
   }
 
   handleEditorAndFormChanges(

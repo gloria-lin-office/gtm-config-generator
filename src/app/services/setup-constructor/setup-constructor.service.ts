@@ -9,6 +9,7 @@ import { extractAccountAndContainerId } from '../converter/utilities/utilities';
 export class SetupConstructorService {
   googleTagName: BehaviorSubject<string> = new BehaviorSubject<string>('');
   measurementId: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  measurementIdVariable: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   includeItemScopedVariables: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(false);
@@ -27,6 +28,13 @@ export class SetupConstructorService {
 
   getMeasurementId() {
     return this.measurementId.asObservable();
+  }
+
+  setMeasurementIdVariable(id: string) {
+    this.measurementIdVariable.next(id);
+  }
+  getMeasurementIdVariable() {
+    return this.measurementIdVariable.asObservable();
   }
 
   setIncludeItemScopedVariables(include: boolean) {

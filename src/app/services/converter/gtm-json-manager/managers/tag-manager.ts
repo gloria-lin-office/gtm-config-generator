@@ -17,24 +17,27 @@ export class TagManager {
   formatSingleTag(
     formattedParams: Parameter[],
     eventName: string,
-    triggers: Trigger[]
+    triggers: Trigger[],
+    data: object,
   ) {
     if (isBuiltInEvent(eventName)) {
       return;
     }
-    this.addTagIfNotExists(eventName, formattedParams, triggers);
+    this.addTagIfNotExists(eventName, formattedParams, triggers, data);
   }
 
   addTagIfNotExists(
     eventName: string,
     formattedParams: Parameter[],
-    triggers: Trigger[]
+    triggers: Trigger[],
+    data: object
   ) {
     if (!this.tags.some((tag) => tag.name === eventName) && triggers) {
       this.tags.push({
         name: eventName,
         parameters: formattedParams,
         triggers: [triggers.find((trigger) => trigger.name === eventName)!],
+        data: data
       });
     }
   }
@@ -46,6 +49,7 @@ export class TagManager {
   getAllTags(
     googleTagName: string,
     measurementId: string,
+    measurementIdVariable: string,
     accountId: string,
     containerId: string,
     data: Record<string, string>[],
@@ -58,13 +62,14 @@ export class TagManager {
       createGA4Configuration(
         googleTagName,
         measurementId,
+        measurementIdVariable,
         accountId,
         containerId
       ),
       // normal tags
       ...tags.map((tag) => {
         return createTag(
-          googleTagName,
+          measurementIdVariable,
           accountId,
           containerId,
           tag,

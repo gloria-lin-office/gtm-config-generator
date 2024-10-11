@@ -24,6 +24,7 @@ export class VariableManger {
   getVariables(
     accountId: string,
     containerId: string,
+    measurementIdVariable: string,
     dataLayers: string[]
   ): VariableConfig[] {
     const variables = dataLayers.map((dL, i) => {
@@ -32,7 +33,8 @@ export class VariableManger {
 
     const regexMeasurementIdVariable = createRegexMeasurementIdVariable(
       accountId,
-      containerId
+      containerId,
+      measurementIdVariable
     );
 
     variables.push(regexMeasurementIdVariable);
